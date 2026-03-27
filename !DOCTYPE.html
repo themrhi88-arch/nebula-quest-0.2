@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Nebula: Tactical Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #020205;
+            font-family: 'Google Sans', sans-serif;
+            color: white;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #0a0a1a 0%, #020205 100%);
+        }
+
+        canvas { display: block; }
+
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .score-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 200px;
+        }
+
+        #energy-bar {
+            height: 4px;
+            background: #D96570;
+            transition: width 0.1s linear;
+        }
+
+        .ammo-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: #9B72CB;
+            transition: all 0.2s;
+        }
+
+        .ammo-dot.empty {
+            opacity: 0.1;
+            background: #fff;
+            transform: scale(0.5);
+        }
+
+        .status-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(5, 5, 10, 0.98);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(66, 133, 244, 0.4);
+            max-width: 450px;
+            z-index: 100;
+        }
+
+        .control-mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid transparent;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+
+        .control-mode-btn.active {
+            background: #4285F4;
+            border-color: #4285F4;
+        }
+
+        .btn {
+            background: #4285F4;
+            color: white;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            margin-top: 20px;
+        }
+
+        #boss-ui {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            display: none;
+            text-align: center;
+        }
+
+        .announcement {
+            position: absolute;
+            top: 25%;
+            width: 100%;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: pulseFade 3s forwards;
+            z-index: 50;
+        }
+
+        @keyframes pulseFade {
+            0% { opacity: 0; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1.1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="ui-overlay">
+        <div class="score-box">
+            <div class="flex justify-between items-center mb-2">
+                <span id="score" class="text-2xl font-bold">0</span>
+                <span id="mode-indicator" class="text-xs font-bold tracking-widest">FLASH</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-1 mb-3 overflow-hidden">
+                <div id="energy-bar" style="width: 100%"></div>
+            </div>
+            <div id="ammo-display" class="flex gap-1 items-center"></div>
+        </div>
+    </div>
+
+    <div id="boss-ui">
+        <div class="text-[10px] uppercase tracking-[0.3em] mb-1 opacity-70">Core Integrity</div>
+        <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+            <div id="boss-bar" class="h-full bg-red-500" style="width: 100%"></div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="start-screen" class="status-msg">
+        <h1 class="text-3xl font-bold mb-4">NEBULA QUEST</h1>
+        <p class="text-sm opacity-60 mb-6 italic">Defeat the Core to survive.</p>
+        <div class="text-left text-[11px] space-y-3 mb-8 bg-white/5 p-4 rounded-lg">
+            <p><b class="text-blue-400">FLASH:</b> Pure evasion. High speed.</p>
+            <p><b class="text-purple-400">PRO:</b> Auto-target shooting. Depleting ammo forces a reload.</p>
+            <p><b class="text-red-400">ULTRA:</b> Kinetic shield. Use to strike the Boss core.</p>
+            <p><b class="text-orange-400">ORANGE STALKER:</b> Spawns at 2000pts. Tracks and fires lasting lasers.</p>
+            <p class="text-gray-400 mt-4 pt-4 border-t border-white/10"><b>Controls:</b> Choose your setup then play.<br>Mouse only (smooth follow) or Keyboard only (direct WASD/Arrow movement).</p>
+        </div>
+
+        <div class="mb-6">
+            <p class="text-xs font-bold tracking-widest mb-3">SELECT CONTROL MODE</p>
+            <div class="flex justify-center gap-2">
+                <button class="control-mode-btn" id="mouse-btn" onclick="setControlMode('mouse')">🖱️ MOUSE</button>
+                <button class="control-mode-btn" id="keyboard-btn" onclick="setControlMode('keyboard')">⌨️ KEYBOARD</button>
+            </div>
+        </div>
+
+        <button class="btn w-full" onclick="startGame()">ENGAGE</button>
+    </div>
+
+    <div id="game-over" class="status-msg hidden">
+        <h2 id="end-title" class="text-2xl font-bold mb-2 text-red-500">DEFEATED</h2>
+        <p class="opacity-70 mb-6">Score: <span id="final-score">0</span></p>
+        <button class="btn w-full" onclick="startGame()">RETRY</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const energyBar = document.getElementById('energy-bar');
+    const ammoDisplay = document.getElementById('ammo-display');
+    const bossUI = document.getElementById('boss-ui');
+    const bossBar = document.getElementById('boss-bar');
+
+    let gameActive = false;
+    let score = 0;
+    let frame = 0;
+    let shake = 0;
+    let ultraEnergy = 100;
+    let screenFlash = 0;  // For hit feedback
+    let modeTransition = 0;  // For smooth mode switching
+    let controlMode = null; // 'mouse' or 'keyboard'
+    
+    let ammo = 10;
+    let maxAmmo = 10;
+    let isReloading = false;
+    let bullets = [];
+    
+    // Keyboard input tracking
+    let keys = {};
+    let baseSpeed = 5;  // Pixels per frame
+
+    let bossActive = false;
+    let boss = null;
+    let enemies = [];
+    let enemyBullets = []; 
+    let enemyPulses = [];  
+    let obstacles = [];
+    let collectibles = [];
+    let particles = [];
+    let bossBullets = []; 
+    let mines = []; 
+    let lasers = []; // New laser array
+
+    const MODES = {
+        FLASH: { id: 'FLASH', color: '#4285F4', speed: 1.5, radius: 10, shield: false, drain: -1.0 },
+        PRO: { id: 'PRO', color: '#9B72CB', speed: 0.9, radius: 15, shield: false, drain: -0.2 },
+        ULTRA: { id: 'ULTRA', color: '#D96570', speed: 0.6, radius: 24, shield: true, drain: 1.8 }
+    };
+
+    let currentMode = MODES.FLASH;
+    let player = { x: 0, y: 0, targetX: 0, targetY: 0, trail: [] };
+
+    // SOUND SYSTEM
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const soundSystem = {
+        play(freq, duration = 0.1, type = 'sine', volume = 0.3) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(volume, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + duration);
+        },
+        shoot() { this.play(400, 0.08, 'sine', 0.2); },
+        impact() { this.play(220, 0.15, 'sine', 0.35); },
+        powerup() { this.play(600, 0.2, 'sine', 0.3); },
+        enemyFire() { this.play(300, 0.12, 'sine', 0.2); },
+        bossFire() { this.play(250, 0.18, 'sine', 0.35); },
+        laser() { this.play(800, 0.3, 'sine', 0.25); },
+        mineExplode() { this.playComplex([200, 350, 150], [0.2, 0.15, 0.25]); },
+        shieldHit() { this.play(550, 0.1, 'sine', 0.25); },
+        modeSwitch() { this.playComplex([600, 800], [0.08, 0.08]); },
+        bossEnter() { this.playComplex([150, 200, 250, 300], [0.15, 0.15, 0.15, 0.15]); },
+        vulnerability() { this.playComplex([800, 600, 800], [0.1, 0.1, 0.1]); },
+        damage() { this.play(150, 0.2, 'sine', 0.4); },
+        winFanfare() {
+            const freqs = [400, 500, 600, 700, 600, 500, 400];
+            freqs.forEach((f, i) => setTimeout(() => this.play(f, 0.15, 'sine', 0.3), i * 120));
+        },
+        playComplex(freqs, durations) {
+            freqs.forEach((f, i) => setTimeout(() => this.play(f, durations[i] || 0.1, 'sine', 0.25), i * 50));
+        }
+    };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    window.addEventListener('mousemove', e => { 
+        if (controlMode === 'mouse') {
+            player.targetX = e.clientX; 
+            player.targetY = e.clientY; 
+        }
+    });
+    window.addEventListener('touchmove', e => {
+        if (controlMode === 'mouse') {
+            player.targetX = e.touches[0].clientX; 
+            player.targetY = e.touches[0].clientY;
+        }
+    }, {passive: false});
+    window.addEventListener('mousedown', toggleMode);
+    window.addEventListener('touchstart', e => { 
+        if(gameActive && e.target.tagName !== 'BUTTON') toggleMode(); 
+    });
+
+    // Keyboard controls
+    window.addEventListener('keydown', e => {
+        keys[e.key.toLowerCase()] = true;
+        // Spacebar for mode switching
+        if (e.key === ' ' && gameActive) {
+            e.preventDefault();
+            toggleMode();
+        }
+    });
+    window.addEventListener('keyup', e => {
+        keys[e.key.toLowerCase()] = false;
+    });
+
+    function setControlMode(mode) {
+        controlMode = mode;
+        document.getElementById('mouse-btn').classList.toggle('active', mode === 'mouse');
+        document.getElementById('keyboard-btn').classList.toggle('active', mode === 'keyboard');
+        announce(`Control mode set to ${mode.toUpperCase()}`, '#FFF');
+    }
+
+    function toggleMode() {
+        if (!gameActive) return;
+        
+        // If leaving PRO mode with incomplete ammo, auto-start reloading in background
+        if (currentMode.id === 'PRO' && ammo < 10 && !isReloading) {
+            isReloading = true;
+        }
+        
+        let next;
+        if (currentMode.id === 'FLASH') {
+            // Can only switch to PRO if you have all 10 bullets
+            if (ammo === 10 && !isReloading) next = MODES.PRO;
+            else next = MODES.ULTRA;
+        } else if (currentMode.id === 'PRO') {
+            next = MODES.ULTRA;
+        } else {
+            next = MODES.FLASH;
+        }
+        currentMode = next;
+        modeTransition = 0.5;  // Trigger smooth transition
+        document.getElementById('mode-indicator').innerText = currentMode.id;
+        document.getElementById('mode-indicator').style.color = currentMode.color;
+        createExplosion(player.x, player.y, currentMode.color, 15);  // More particles
+        soundSystem.modeSwitch();
+    }
+
+    function createExplosion(x, y, color, count, size = 3) {
+        // Create more particles and vary their properties for better visual effect
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+            const speed = 8 + Math.random() * 8;
+            particles.push({
+                x, y, 
+                vx: Math.cos(angle) * speed, 
+                vy: Math.sin(angle) * speed,
+                life: 1, 
+                size: Math.random() * size + size * 0.5, 
+                color: color,
+                decay: 0.02 + Math.random() * 0.01
+            });
+        }
+    }
+
+    function announce(text, color) {
+        const el = document.createElement('div');
+        el.className = 'announcement';
+        el.innerText = text;
+        el.style.color = color;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+
+    function spawn() {
+        if (bossActive) return;
+        if (score >= 8888) { startBoss(); return; }
+
+        if (frame % 80 === 0) {
+            obstacles.push({ x: Math.random() * canvas.width, y: -50, vy: 3 + Math.random() * 3, size: 20 + Math.random() * 20 });
+        }
+
+        if (frame % 150 === 0) {
+            let spawnRoll = Math.random();
+            let type = null;
+
+            // Added Orange Stalker logic
+            if (score >= 2000 && spawnRoll < 0.05) {
+                type = 'orange';
+            } else if (spawnRoll < 0.10) type = 'yellow';
+            else if (spawnRoll < 0.30) type = 'red';
+            else if (spawnRoll < 0.50) type = 'blue';
+            else if (spawnRoll < 0.70) type = 'green';
+
+            if (type) {
+                let targetY = (type === 'yellow' || type === 'orange') ? 60 + Math.random() * 100 : (type === 'green' ? 50 + Math.random() * 80 : 100 + Math.random() * 200);
+                enemies.push({
+                    type: type,
+                    x: Math.random() * canvas.width,
+                    y: -50,
+                    targetY: targetY,
+                    state: 'DESCEND',
+                    timer: 0,
+                    trackX: 0, trackY: 0, // For orange tracking
+                    lifetime: type === 'yellow' ? 600 : (type === 'green' ? 600 : (type === 'orange' ? 180 : 0)),
+                    vx: 0, vy: 0
+                });
+            }
+        }
+
+        if (frame % 100 === 0) {
+             collectibles.push({
+                x: Math.random() * canvas.width, y: -50,
+                vy: 2 + Math.random() * 2, size: 8, pulse: 0
+            });
+        }
+    }
+
+    function startBoss() {
+        bossActive = true;
+        obstacles = []; enemies = []; enemyBullets = []; enemyPulses = [];
+        collectibles = []; bossBullets = []; mines = []; lasers = [];
+        boss = {
+            x: canvas.width / 2, y: -200, targetY: 150, hp: 1500, maxHp: 1500,
+            shieldAngle: 0, attackTimer: 0, isVulnerable: false, vulnerableTimer: 0
+        };
+        bossUI.style.display = 'block';
+        announce("FINAL CORE ONLINE", "#D96570");
+        soundSystem.bossEnter();
+    }
+
+    function update() {
+        if (!gameActive) return;
+        frame++;
+        if (shake > 0) shake *= 0.9;
+        if (screenFlash > 0) screenFlash *= 0.85;  // Decay screen flash
+        if (modeTransition > 0) modeTransition *= 0.9;  // Smooth mode transition decay
+
+        // Movement by selected control mode
+        const keyboardX = (keys['ArrowRight'] || keys['d'] ? 1 : 0) - (keys['ArrowLeft'] || keys['a'] ? 1 : 0);
+        const keyboardY = (keys['ArrowDown'] || keys['s'] ? 1 : 0) - (keys['ArrowUp'] || keys['w'] ? 1 : 0);
+
+        if (controlMode === 'mouse') {
+            player.x += (player.targetX - player.x) * 0.12 * currentMode.speed;
+            player.y += (player.targetY - player.y) * 0.12 * currentMode.speed;
+        } else if (controlMode === 'keyboard') {
+            if (Math.abs(keyboardX) > 0.1 || Math.abs(keyboardY) > 0.1) {
+                player.x += keyboardX * baseSpeed;
+                player.y += keyboardY * baseSpeed;
+            }
+        }
+
+        if (controlMode) {
+            player.x = Math.max(currentMode.radius, Math.min(canvas.width - currentMode.radius, player.x));
+            player.y = Math.max(currentMode.radius, Math.min(canvas.height - currentMode.radius, player.y));
+            player.trail.unshift({x: player.x, y: player.y});
+            if (player.trail.length > 10) player.trail.pop();
+        }
+
+        if (isReloading) {
+            if (frame % 15 === 0) {
+                ammo++;
+                if (ammo >= 10) { ammo = 10; isReloading = false; announce("PRO RELOADED", "#9B72CB"); soundSystem.powerup(); }
+            }
+        }
+
+        if (currentMode.id === 'PRO' && ammo > 0 && frame % 6 === 0) {
+            bullets.push({ x: player.x, y: player.y, vy: -18 });
+            soundSystem.shoot();
+            ammo--;
+            if (ammo <= 0) {
+                isReloading = true;
+                currentMode = MODES.FLASH;
+                document.getElementById('mode-indicator').innerText = currentMode.id;
+                document.getElementById('mode-indicator').style.color = currentMode.color;
+                announce("RELOADING...", "#666");
+            }
+        }
+
+        ultraEnergy -= currentMode.drain * 0.4;
+        if (ultraEnergy > 100) ultraEnergy = 100;
+        if (ultraEnergy <= 0) {
+            ultraEnergy = 0;
+            if (currentMode.id === 'ULTRA') {
+                currentMode = MODES.FLASH;
+                document.getElementById('mode-indicator').innerText = currentMode.id;
+                document.getElementById('mode-indicator').style.color = currentMode.color;
+            }
+        }
+        energyBar.style.width = ultraEnergy + '%';
+
+        // Lasers Logic (1 seconds = 60 frames)
+        for (let i = lasers.length - 1; i >= 0; i--) {
+            lasers[i].timer--;
+            // Collision with laser
+            let l = lasers[i];
+            let dist = Math.abs((l.y2-l.y1)*player.x - (l.x2-l.x1)*player.y + l.x2*l.y1 - l.y2*l.x1) / Math.hypot(l.y2-l.y1, l.x2-l.x1);
+            if (dist < currentMode.radius + 5) {
+                if (currentMode.shield) ultraEnergy -= 0.5; else endGame();
+            }
+            if (lasers[i].timer <= 0) lasers.splice(i, 1);
+        }
+
+        // Mines Logic
+        for (let i = mines.length - 1; i >= 0; i--) {
+            let m = mines[i];
+            m.timer++;
+            if (m.timer > 120) { 
+                createExplosion(m.x, m.y, '#FBBC05', 20, 5);
+                let dist = Math.hypot(player.x - m.x, player.y - m.y);
+                if (dist < 150) {
+                    ultraEnergy = 0;
+                    announce("ULTRA DRAINED!", "#FBBC05");
+                    soundSystem.mineExplode();
+                    shake = 10;
+                }
+                mines.splice(i, 1);
+            }
+        }
+
+        // Bullets Collision
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.y += b.vy;
+            if (b.y < -20) { bullets.splice(i, 1); continue; }
+            let hit = false;
+            for (let j = enemies.length - 1; j >= 0; j--) {
+                let en = enemies[j];
+                if (Math.hypot(b.x - en.x, b.y - en.y) < 25) {
+                    let color = en.type === 'orange' ? '#FF8C00' : (en.type === 'yellow' ? '#FBBC05' : (en.type === 'blue' ? '#4285F4' : (en.type === 'green' ? '#34A853' : '#FF4444')));
+                    createExplosion(en.x, en.y, color, 20);  // More particles
+                    enemies.splice(j, 1);
+                    soundSystem.impact();
+                    hit = true; 
+                    score += 100;
+                    break;
+                }
+            }
+            if (hit) bullets.splice(i, 1);
+        }
+
+        // Collectibles
+        collectibles.forEach((c, i) => {
+            c.y += c.vy; c.pulse += 0.1;
+            if (Math.hypot(c.x - player.x, c.y - player.y) < currentMode.radius + 15) {
+                collectibles.splice(i, 1); score += 100;
+                ultraEnergy = Math.min(100, ultraEnergy + 10);
+                createExplosion(c.x, c.y, '#42F4F4', 8, 2);
+                soundSystem.powerup();
+            } else if (c.y > canvas.height + 50) collectibles.splice(i, 1);
+        });
+
+        // Enemy AI
+        enemies.forEach((en, i) => {
+            en.timer++;
+            if (en.type === 'orange') {
+                if (en.state === 'DESCEND') {
+                    en.y += (en.targetY - en.y) * 0.05;
+                    if (Math.abs(en.y - en.targetY) < 5) en.state = 'TRACKING';
+                } else if (en.state === 'TRACKING') {
+                    en.trackX = player.x;
+                    en.trackY = player.y;
+                    en.lifetime--;
+                    if (en.lifetime <= 0) {
+                        // Fire Laser and destroy
+                        lasers.push({x1: en.x, y1: en.y, x2: en.trackX, y2: en.trackY, timer: 120});
+                        createExplosion(en.x, en.y, '#FF8C00', 15);
+                        soundSystem.laser();
+                        enemies.splice(i, 1);
+                    }
+                }
+            }
+            else if (en.type === 'yellow') {
+                if (en.state === 'DESCEND') {
+                    en.y += (en.targetY - en.y) * 0.05;
+                    if (Math.abs(en.y - en.targetY) < 5) en.state = 'DROPPING';
+                } else if (en.state === 'DROPPING') {
+                    en.lifetime--;
+                    en.x += Math.cos(frame * 0.02) * 4;
+                    if (en.timer % 120 === 0) { mines.push({ x: en.x, y: en.y, timer: 0 }); }
+                    if (en.lifetime <= 0) en.state = 'FLEE';
+                } else if (en.state === 'FLEE') {
+                    en.y -= 5; if (en.y < -100) { enemies.splice(i, 1); return; }
+                }
+            }
+            else if (en.type === 'red') {
+                if (en.state === 'DESCEND') {
+                    en.y += (en.targetY - en.y) * 0.05;
+                    if (Math.abs(en.y - en.targetY) < 5) en.state = 'LOCK';
+                } else if (en.state === 'LOCK') {
+                    en.x += (player.x - en.x) * 0.03;
+                    if (en.timer > 100) {
+                        const angle = Math.atan2(player.y - en.y, player.x - en.x);
+                        en.vx = Math.cos(angle) * 32; en.vy = Math.sin(angle) * 32; en.state = 'DASH';
+                    }
+                } else if (en.state === 'DASH') {
+                    en.x += en.vx; en.y += en.vy;
+                    if (en.y > canvas.height + 100 || en.x < -100 || en.x > canvas.width + 100) { enemies.splice(i, 1); return; }
+                }
+            } 
+            else if (en.type === 'blue') {
+                if (en.state === 'DESCEND') {
+                    en.y += (en.targetY - en.y) * 0.05;
+                    if (Math.abs(en.y - en.targetY) < 5) en.state = 'PULSING';
+                } else if (en.state === 'PULSING') {
+                    en.x += Math.sin(frame * 0.02) * 1.5;
+                    if (en.timer % 120 === 0) {
+                        enemyPulses.push({ x: en.x, y: en.y, radius: 10, maxRadius: 200, speed: 4, color: '#4285F4' });
+                        soundSystem.enemyFire();
+                    }
+                }
+                if (en.timer > 600) { createExplosion(en.x, en.y, '#4285F4', 10); enemies.splice(i, 1); return; }
+            } 
+            else if (en.type === 'green') {
+                if (en.state === 'DESCEND') {
+                    en.y += (en.targetY - en.y) * 0.05;
+                    if (Math.abs(en.y - en.targetY) < 5) en.state = 'SHOOTING';
+                } else if (en.state === 'SHOOTING') {
+                    en.lifetime--; en.x += Math.sin(frame * 0.03) * 2;
+                    if (en.timer % 60 === 0) {
+                        const angle = Math.atan2(player.y - en.y, player.x - en.x);
+                        enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6, radius: 5, color: '#34A853' });
+                        soundSystem.enemyFire();
+                    }
+                    if (en.lifetime <= 0) en.state = 'FLEE';
+                } else if (en.state === 'FLEE') {
+                    en.y -= 5; if (en.y < -100) { enemies.splice(i, 1); return; }
+                }
+            }
+
+            if (Math.hypot(en.x - player.x, en.y - player.y) < currentMode.radius + 15) {
+                if (currentMode.shield) {
+                    enemies.splice(i, 1); createExplosion(en.x, en.y, '#FFF', 25);
+                    ultraEnergy -= 20; soundSystem.shieldHit(); shake = 5; screenFlash = 0.3; score += 100;
+                } else endGame();
+            }
+        });
+
+        // Other collisions
+        enemyBullets.forEach((eb, i) => {
+            eb.x += eb.vx; eb.y += eb.vy;
+            if (Math.hypot(eb.x - player.x, eb.y - player.y) < currentMode.radius + eb.radius) {
+                if (currentMode.shield) { 
+                    createExplosion(eb.x, eb.y, '#FFF', 12);
+                    enemyBullets.splice(i, 1); 
+                    ultraEnergy -= 5; 
+                    soundSystem.shieldHit(); 
+                    screenFlash = 0.2;
+                } else endGame();
+            }
+        });
+
+        enemyPulses.forEach((p, i) => {
+            p.radius += p.speed;
+            if (p.radius > p.maxRadius) { enemyPulses.splice(i, 1); return; }
+            const dist = Math.hypot(p.x - player.x, p.y - player.y);
+            if (Math.abs(dist - p.radius) < currentMode.radius + 4) {
+                if (currentMode.shield) { ultraEnergy -= 2; soundSystem.shieldHit(); screenFlash = 0.15; } else endGame();
+            }
+        });
+
+        if (bossActive) {
+            boss.y += (boss.targetY - boss.y) * 0.03; boss.shieldAngle += 0.06; boss.attackTimer++;
+            if (!boss.isVulnerable) {
+                if (boss.attackTimer % 180 === 0) boss.targetY = canvas.height - 180;
+                if (boss.y > canvas.height - 250) { shake = 25; boss.isVulnerable = true; boss.vulnerableTimer = 90; boss.targetY = 150; announce("STRIKE NOW!", "#FFF"); soundSystem.vulnerability(); }
+                if (boss.attackTimer % 70 === 0 && boss.y > 0) {
+                    const baseAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+                    for (let offset of [-0.3, 0, 0.3]) bossBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(baseAngle + offset) * 7, vy: Math.sin(baseAngle + offset) * 7, radius: 6 });
+                    soundSystem.bossFire();
+                }
+            } else { boss.vulnerableTimer--; if (boss.vulnerableTimer <= 0) boss.isVulnerable = false; }
+            if (Math.hypot(player.x - boss.x, player.y - boss.y) < currentMode.radius + (boss.isVulnerable ? 60 : 90)) {
+                if (currentMode.id === 'ULTRA') {
+                    if (boss.isVulnerable) { boss.hp -= 20; createExplosion(boss.x, boss.y, '#FFF', 30); soundSystem.impact(); screenFlash = 0.4; if (boss.hp <= 0) winGame(); }
+                    else ultraEnergy -= 1;
+                } else endGame();
+            }
+            bossBar.style.width = (boss.hp / boss.maxHp * 100) + '%';
+        }
+
+        bossBullets.forEach((bb, i) => {
+            bb.x += bb.vx; bb.y += bb.vy;
+            if (Math.hypot(bb.x - player.x, bb.y - player.y) < currentMode.radius + bb.radius) {
+                if (currentMode.shield) { 
+                    createExplosion(bb.x, bb.y, '#FFF', 15);
+                    bossBullets.splice(i, 1); 
+                    ultraEnergy -= 5; 
+                    soundSystem.shieldHit(); 
+                    screenFlash = 0.25;
+                } else endGame();
+            }
+        });
+
+        obstacles.forEach((o, i) => {
+            o.y += o.vy;
+            if (Math.hypot(o.x - player.x, o.y - player.y) < currentMode.radius + o.size/2) {
+                if (currentMode.shield) { 
+                    createExplosion(o.x, o.y, '#F0F0F0', 20);
+                    obstacles.splice(i, 1); 
+                    ultraEnergy -= 15; 
+                    soundSystem.shieldHit(); 
+                    screenFlash = 0.3;
+                    shake = 8;
+                } else endGame();
+            }
+            if (o.y > canvas.height + 50) obstacles.splice(i, 1);
+        });
+
+        particles.forEach((p, i) => { 
+            p.x += p.vx; p.y += p.vy; 
+            p.vx *= 0.98;  // Friction for smoother trails
+            p.vy *= 0.98;
+            p.life -= (p.decay || 0.025); 
+            if (p.life <= 0) particles.splice(i, 1); 
+        });
+        scoreEl.innerText = score;
+        spawn();
+        updateAmmoDisplay();
+    }
+
+    function updateAmmoDisplay() {
+        ammoDisplay.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const d = document.createElement('div');
+            d.className = `ammo-dot ${i >= ammo ? 'empty' : ''}`;
+            if (isReloading) d.style.background = '#444';
+            ammoDisplay.appendChild(d);
+        }
+    }
+
+    function draw() {
+        ctx.save();
+        if (shake > 0.1) ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Screen flash effect on hit
+        if (screenFlash > 0.05) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${screenFlash * 0.4})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        player.trail.forEach((p, i) => {
+            ctx.globalAlpha = 0.5 * (1 - (i/player.trail.length));
+            ctx.fillStyle = currentMode.color; ctx.beginPath(); ctx.arc(p.x, p.y, currentMode.radius * (1-i/10), 0, Math.PI*2); ctx.fill();
+        });
+
+        ctx.globalAlpha = 1; ctx.shadowBlur = 15; ctx.shadowColor = currentMode.color;
+        // Smooth mode transition effect
+        if (modeTransition > 0.05) {
+            ctx.shadowBlur = 15 + modeTransition * 30;
+            ctx.shadowColor = currentMode.color;
+        }
+        ctx.fillStyle = currentMode.color; ctx.beginPath(); ctx.arc(player.x, player.y, currentMode.radius, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Draw Lasers
+        lasers.forEach(l => {
+            ctx.strokeStyle = '#FF8C00';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#FF8C00';
+            ctx.lineWidth = (l.timer / 240) * 10;
+            ctx.globalAlpha = l.timer / 240;
+            ctx.beginPath(); ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); ctx.stroke();
+            ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+        });
+
+        // Draw Mines
+        mines.forEach(m => {
+            let progress = m.timer / 120;
+            ctx.shadowBlur = 10; ctx.shadowColor = '#FBBC05';
+            ctx.fillStyle = `rgba(251, 188, 5, ${0.5 + Math.sin(frame * 0.2) * 0.5})`;
+            ctx.beginPath(); ctx.arc(m.x, m.y, 20 + progress * 130, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#FBBC05'; ctx.lineWidth = 2; ctx.stroke();
+        });
+
+        collectibles.forEach(c => {
+            ctx.shadowBlur = 8 + Math.sin(c.pulse) * 4; ctx.shadowColor = '#42F4F4'; ctx.fillStyle = '#42F4F4';
+            ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.fill();
+        });
+
+        enemyPulses.forEach(p => {
+            ctx.strokeStyle = p.color; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.stroke();
+        });
+
+        enemies.forEach(en => {
+            ctx.save(); ctx.translate(en.x, en.y);
+            if (en.type === 'orange') {
+                ctx.fillStyle = '#FF8C00'; ctx.shadowBlur = 15; ctx.shadowColor = '#FF8C00';
+                if (en.state === 'TRACKING') {
+                    // Draw tracking line
+                    ctx.restore(); ctx.save();
+                    ctx.strokeStyle = 'rgba(255, 140, 0, 0.3)';
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath(); ctx.moveTo(en.x, en.y); ctx.lineTo(en.trackX, en.trackY); ctx.stroke();
+                    ctx.translate(en.x, en.y);
+                }
+                ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(15, 15); ctx.lineTo(0, 8); ctx.lineTo(-15, 15); ctx.closePath(); ctx.fill();
+            }
+            else if (en.type === 'yellow') {
+                ctx.fillStyle = '#FBBC05'; ctx.shadowBlur = 15; ctx.shadowColor = '#FBBC05';
+                ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(15, 10); ctx.lineTo(0, 5); ctx.lineTo(-15, 10); ctx.closePath(); ctx.fill();
+            }
+            else if (en.type === 'red') {
+                if (en.state === 'LOCK') { let s = 1 + Math.sin(frame * 0.3) * 0.15; ctx.scale(s, s); ctx.strokeStyle = '#F44'; ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI*2); ctx.stroke(); }
+                if (en.state === 'DASH') ctx.rotate(Math.atan2(en.vy, en.vx) + Math.PI/2);
+                ctx.fillStyle = '#FF4444'; ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(12, 15); ctx.lineTo(-12, 15); ctx.closePath(); ctx.fill();
+            } 
+            else if (en.type === 'blue') {
+                if (en.state === 'PULSING') { let s = 1 + Math.sin(frame * 0.1) * 0.1; ctx.scale(s, s); }
+                ctx.fillStyle = '#23338A'; ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(15, 0); ctx.lineTo(0, 15); ctx.lineTo(-15, 0); ctx.closePath(); ctx.fill();
+            } 
+            else if (en.type === 'green') {
+                if (en.state === 'SHOOTING') ctx.rotate(Math.sin(frame * 0.05) * 0.2);
+                ctx.fillStyle = '#34A853'; ctx.fillRect(-12, -12, 24, 24);
+            }
+            ctx.restore();
+        });
+
+        if (bossActive) {
+            ctx.save(); ctx.translate(boss.x, boss.y);
+            if (!boss.isVulnerable) { ctx.strokeStyle = '#D96570'; ctx.lineWidth = 6; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(0, 0, 100, boss.shieldAngle + (i * Math.PI * 0.5), boss.shieldAngle + (i * Math.PI * 0.5) + 0.8); ctx.stroke(); } }
+            ctx.fillStyle = boss.isVulnerable ? '#FFF' : '#111'; ctx.beginPath(); ctx.arc(0, 0, 60, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        enemyBullets.forEach(eb => { ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(eb.x, eb.y, eb.radius, 0, Math.PI*2); ctx.fill(); });
+        bossBullets.forEach(bb => { ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(bb.x, bb.y, bb.radius, 0, Math.PI*2); ctx.fill(); });
+        bullets.forEach(b => { ctx.fillStyle = '#9B72CB'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill(); });
+        obstacles.forEach(o => { ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.strokeRect(o.x - o.size/2, o.y - o.size/2, o.size, o.size); });
+        particles.forEach((p, i) => { 
+            ctx.globalAlpha = p.life * 0.8; 
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = p.color;
+            ctx.fillStyle = p.color; 
+            ctx.beginPath(); 
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); 
+            ctx.fill(); 
+            ctx.shadowBlur = 0;
+        });
+        ctx.restore();
+    }
+
+    function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+
+    function startGame() {
+        if (!controlMode) {
+            announce('Please select MOUSE or KEYBOARD controls first.', '#FFEB3B');
+            return;
+        }
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over').classList.add('hidden');
+        score = 0; frame = 0; ammo = 10; isReloading = false; ultraEnergy = 100; bossActive = false; bossUI.style.display = 'none';
+        enemies = []; enemyBullets = []; enemyPulses = []; obstacles = []; bullets = []; particles = []; collectibles = []; bossBullets = []; mines = []; lasers = [];
+        obstacleTimer = 0; enemyTimer = 0; collectibleTimer = 0;
+        player.x = canvas.width/2; player.y = canvas.height*0.8; player.targetX = player.x; player.targetY = player.y;
+        currentMode = MODES.FLASH; gameActive = true;
+    }
+
+    function endGame() {
+        if (!gameActive) return;
+        gameActive = false;
+        document.getElementById('game-over').classList.remove('hidden');
+        document.getElementById('end-title').innerText = "DEFEATED";
+        document.getElementById('end-title').className = "text-2xl font-bold mb-2 text-red-500";
+        document.getElementById('final-score').innerText = score;
+        createExplosion(player.x, player.y, '#F00', 30, 10); shake = 20;
+        soundSystem.damage();
+    }
+
+    function winGame() {
+        if (!gameActive) return;
+        gameActive = false;
+        score += 880000;
+        document.getElementById('game-over').classList.remove('hidden');
+        document.getElementById('end-title').innerText = "CORE DESTROYED";
+        document.getElementById('end-title').className = "text-2xl font-bold mb-2 text-green-400";
+        scoreEl.innerText = score;
+        document.getElementById('final-score').innerText = score;
+        for(let i=0; i<6; i++) {
+            setTimeout(() => {
+                createExplosion(Math.random() * canvas.width, Math.random() * canvas.height, '#34A853', 25, 6);
+                shake = 5;
+            }, i * 300);
+        }
+        soundSystem.winFanfare();
+    }
+
+    window.onload = () => { gameLoop(); };
+</script>
+</body>
+</html>

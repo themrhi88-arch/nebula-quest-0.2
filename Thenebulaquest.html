@@ -1382,8 +1382,8 @@
         const encounterLabel = isWarden ? 'THE WARDEN EMERGES' : isSpyda ? 'SPYDA UNSEALED' : 'ALIEN QUEEN AWAKENS';
         boss = {
             kind, x: canvas.width / 2, y: -200, targetX: canvas.width / 2, targetY: 150,
-            hp: isWarden ? 1 : isSpyda ? 1050 : 2800,
-            maxHp: isWarden ? 1 : isSpyda ? 1050 : 2800,
+            hp: isWarden ? 1 : isSpyda ? 4200 : 2800,
+            maxHp: isWarden ? 1 : isSpyda ? 4200 : 2800,
             timeRemaining: isWarden ? 3600 : 0, shieldAngle: 0, attackTimer: 0, attackCount: 0,
             isVulnerable: false, vulnerableTimer: 0, diveWarning: 0, isDiving: false,
             waveWarning: 0, waveGap: 0, waveQueued: false, attackQueued: false, coreHitCooldown: 0,
@@ -2156,20 +2156,32 @@
                 }
             }
 
-            if (boss.phase < 3 && !boss.isVulnerable && boss.y > 0) {
+            if (!boss.isVulnerable && boss.y > 0) {
                 if (boss.spydaComboState === 'idle') {
                     boss.spydaComboTimer--;
                     if (boss.spydaComboTimer <= 0) {
-                        const markCount = boss.phase;
-                        const warning = 52 - boss.phase * 7;
-                        for (let i = 0; i < markCount; i++) {
-                            const offset = (i - (markCount - 1) / 2) * 72;
-                            const x = Math.max(36, Math.min(canvas.width - 36, player.x + offset));
-                            const y = Math.max(36, Math.min(canvas.height - 36, player.y + (i % 2 ? -38 : 24)));
-                            boss.spydaSporeMarks.push({ x, y, warning });
+                        if (boss.phase === 3) {
+                            const margin = Math.min(60, canvas.height * 0.12);
+                            boss.spydaLaser = {
+                                warning: 44 - boss.phase * 5,
+                                active: false,
+                                progress: 0,
+                                y: Math.max(margin, Math.min(canvas.height - margin, player.y)),
+                                direction: boss.attackCount % 2 === 0 ? 1 : -1
+                            };
+                            boss.spydaComboState = 'laser';
+                        } else {
+                            const markCount = boss.phase;
+                            const warning = 52 - boss.phase * 7;
+                            for (let i = 0; i < markCount; i++) {
+                                const offset = (i - (markCount - 1) / 2) * 72;
+                                const x = Math.max(36, Math.min(canvas.width - 36, player.x + offset));
+                                const y = Math.max(36, Math.min(canvas.height - 36, player.y + (i % 2 ? -38 : 24)));
+                                boss.spydaSporeMarks.push({ x, y, warning });
+                            }
+                            boss.spydaComboState = 'spores';
+                            boss.spydaComboTimer = warning;
                         }
-                        boss.spydaComboState = 'spores';
-                        boss.spydaComboTimer = warning;
                     }
                 } else if (boss.spydaComboState === 'spores') {
                     boss.spydaComboTimer--;
@@ -2187,7 +2199,7 @@
                 }
             }
 
-            if (boss.phase < 3 && !boss.isVulnerable && boss.spydaComboState === 'laser' && boss.spydaLaser) {
+            if (!boss.isVulnerable && boss.spydaComboState === 'laser' && boss.spydaLaser) {
                 const laser = boss.spydaLaser;
                 if (laser.warning > 0) {
                     laser.warning--;
@@ -2225,7 +2237,7 @@
                     }
                 }
             }
-            if (boss.phase < 3 && !boss.isVulnerable && boss.spydaComboState === 'lanes' && boss.waveQueued) {
+            if (!boss.isVulnerable && boss.spydaComboState === 'lanes' && boss.waveQueued) {
                 boss.waveWarning--;
                 if (boss.waveWarning <= 0) {
                     for (let lane = 0; lane < boss.waveLaneCount; lane++) {
@@ -2238,8 +2250,13 @@
                     }
                     boss.attackCount++;
                     boss.waveQueued = false;
-                    boss.spydaComboState = 'recover';
-                    boss.spydaComboTimer = 68 - boss.phase * 8;
+                    if (boss.phase === 3) {
+                        boss.spydaComboState = 'idle';
+                        boss.spydaComboTimer = 80;
+                    } else {
+                        boss.spydaComboState = 'recover';
+                        boss.spydaComboTimer = 68 - boss.phase * 8;
+                    }
                     soundSystem.bossFire(boss.kind);
                 }
             }

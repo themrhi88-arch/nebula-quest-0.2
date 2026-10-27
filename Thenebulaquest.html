@@ -107,14 +107,383 @@
 
         .difficulty-btn { padding: 8px 10px; font-size: 10px; }
 
+        .difficulty-popup-backdrop {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            background: rgba(1, 2, 12, 0.82);
+            backdrop-filter: blur(8px);
+            z-index: 150;
+        }
+
+        .difficulty-popup {
+            position: relative;
+            width: min(540px, 100%);
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+            padding: 24px;
+            border: 1px solid rgba(125, 160, 255, 0.5);
+            border-radius: 20px;
+            background: linear-gradient(145deg, #10152d, #080912 72%);
+            box-shadow: 0 24px 90px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        .difficulty-popup-art {
+            display: block;
+            width: 100%;
+            aspect-ratio: 2 / 1;
+            margin: 18px auto;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 12px;
+        }
+
+        .difficulty-popup-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 7px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .queen-finale {
+            position: absolute;
+            inset: 0;
+            z-index: 160;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 46%, #35194e 0%, #100d24 48%, #03040d 100%);
+        }
+
+        .ship-intro {
+            position: absolute;
+            inset: 0;
+            z-index: 80;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 50% 48%, rgba(35, 101, 190, 0.32), transparent 38%),
+                radial-gradient(ellipse at 50% 55%, #101a39 0%, #050916 55%, #02030a 100%);
+        }
+
+        .ship-intro-stars {
+            position: absolute;
+            inset: -50%;
+            background-image:
+                radial-gradient(circle, rgba(220, 241, 255, 0.9) 1px, transparent 1.8px),
+                radial-gradient(circle, rgba(111, 183, 255, 0.65) 1px, transparent 2px);
+            background-size: 83px 83px, 137px 137px;
+            background-position: 0 0, 38px 61px;
+            animation: ship-intro-drift 18s linear infinite;
+        }
+
+        .ship-intro-ring {
+            position: absolute;
+            width: min(72vw, 680px);
+            aspect-ratio: 1;
+            border: 1px solid rgba(95, 173, 255, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 0 70px rgba(37, 127, 255, 0.12), inset 0 0 70px rgba(37, 127, 255, 0.08);
+            animation: ship-intro-ring 14s linear infinite;
+        }
+
+        .ship-intro-ring::before,
+        .ship-intro-ring::after {
+            position: absolute;
+            inset: 9%;
+            border: 1px solid rgba(130, 206, 255, 0.13);
+            border-radius: 50%;
+            content: "";
+        }
+
+        .ship-intro-ring::after {
+            inset: 19%;
+            border-style: dashed;
+            border-color: rgba(130, 206, 255, 0.2);
+        }
+
+        .ship-intro-content {
+            position: relative;
+            display: grid;
+            justify-items: center;
+            width: min(100%, 900px);
+            height: 100%;
+            padding: 8vh 24px 12vh;
+            text-align: center;
+        }
+
+        .ship-intro-kicker {
+            align-self: end;
+            color: #9dcaff;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.4em;
+            animation: ship-intro-copy 5s both;
+        }
+
+        .ship-intro-title {
+            position: absolute;
+            top: 19%;
+            color: white;
+            font-size: clamp(24px, 5vw, 52px);
+            font-weight: bold;
+            letter-spacing: 0.18em;
+            text-shadow: 0 0 26px rgba(91, 178, 255, 0.7);
+            animation: ship-intro-title 5s both;
+        }
+
+        .ship-intro-ship {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: clamp(210px, 34vw, 390px);
+            height: auto;
+            filter: drop-shadow(0 0 22px rgba(73, 179, 255, 0.75));
+            transform: translate(-50%, -42%);
+            animation: ship-intro-ship 5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        }
+
+        #ship-intro[data-ship="PRO"] .ship-intro-ship {
+            filter: drop-shadow(0 0 22px rgba(214, 155, 255, 0.8));
+        }
+
+        #ship-intro[data-ship="ULTRA"] .ship-intro-ship {
+            filter: drop-shadow(0 0 22px rgba(255, 120, 79, 0.8));
+        }
+
+        #ship-intro[data-ship="PRO"] .ship-intro-title {
+            text-shadow: 0 0 26px rgba(214, 155, 255, 0.75);
+        }
+
+        #ship-intro[data-ship="ULTRA"] .ship-intro-title {
+            text-shadow: 0 0 26px rgba(255, 120, 79, 0.75);
+        }
+
+        .ship-intro-skip {
+            position: absolute;
+            right: max(24px, env(safe-area-inset-right));
+            bottom: max(24px, env(safe-area-inset-bottom));
+            padding: 12px 18px;
+            border: 1px solid rgba(164, 213, 255, 0.55);
+            border-radius: 8px;
+            background: rgba(7, 19, 42, 0.82);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.14em;
+            cursor: pointer;
+        }
+
+        .ship-intro-skip:hover,
+        .ship-intro-skip:focus-visible {
+            background: rgba(37, 104, 190, 0.75);
+            outline: 2px solid #9dcaff;
+            outline-offset: 3px;
+        }
+
+        .ship-intro.paused,
+        .ship-intro.paused * {
+            animation-play-state: paused !important;
+        }
+
+        @keyframes ship-intro-drift {
+            to { transform: translate3d(80px, 80px, 0); }
+        }
+
+        @keyframes ship-intro-ring {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes ship-intro-copy {
+            0%, 12% { opacity: 0; transform: translateY(12px); }
+            25%, 78% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; }
+        }
+
+        @keyframes ship-intro-title {
+            0%, 12% { opacity: 0; transform: translateY(12px); }
+            25%, 78% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        @keyframes ship-intro-ship {
+            0% { opacity: 0; transform: translate(-50%, 70%) scale(0.35) rotate(-12deg); }
+            18% { opacity: 1; }
+            52% { transform: translate(-50%, -42%) scale(1.05) rotate(4deg); }
+            72% { transform: translate(-50%, -48%) scale(1.18) rotate(-2deg); }
+            100% { opacity: 0.9; transform: translate(-50%, -56%) scale(1.3) rotate(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ship-intro-stars, .ship-intro-ring, .ship-intro-kicker, .ship-intro-title, .ship-intro-ship {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
+
+        .queen-finale-scene {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            animation: finale-camera 9s ease-in-out both;
+        }
+
+        .finale-queen {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: finale-queen-fall 9s ease-in both;
+        }
+
+        .finale-core {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: finale-core-break 9s ease-in both;
+        }
+
+        .finale-beam { animation: finale-beam 9s ease-out both; }
+        .finale-shard { animation: finale-shard 2.8s ease-in 5s both; }
+        .finale-ring { animation: finale-ring 3s ease-out 4.5s both; transform-box: fill-box; transform-origin: center; }
+
+        @keyframes finale-camera {
+            0%, 40% { transform: scale(1); }
+            55% { transform: scale(1.12) translateY(1%); }
+            72% { transform: scale(1.28) translateY(-1%); }
+            100% { transform: scale(1.45); opacity: 0.35; }
+        }
+
+        @keyframes finale-queen-fall {
+            0%, 30% { transform: translate(0, 0) rotate(0); opacity: 1; }
+            37% { transform: translate(-8px, 3px) rotate(-2deg); }
+            42% { transform: translate(7px, -2px) rotate(2deg); }
+            48% { transform: translate(-5px, 2px) rotate(-1deg); }
+            58% { transform: translate(0, 22px) rotate(8deg); opacity: 0.95; }
+            76% { transform: translate(0, 38px) rotate(18deg) scale(0.85); opacity: 0.75; }
+            100% { transform: translate(0, 55px) rotate(28deg) scale(0.7); opacity: 0.12; }
+        }
+
+        @keyframes finale-core-break {
+            0%, 38% { transform: scale(1); opacity: 1; }
+            48% { transform: scale(1.8); opacity: 1; }
+            56% { transform: scale(0.1); opacity: 0.2; }
+            62%, 100% { transform: scale(0); opacity: 0; }
+        }
+
+        @keyframes finale-beam {
+            0%, 34% { opacity: 0; transform: scaleX(0); }
+            39% { opacity: 1; transform: scaleX(1); }
+            46% { opacity: 0.9; transform: scaleX(1); }
+            52%, 100% { opacity: 0; transform: scaleX(1); }
+        }
+
+        @keyframes finale-shard {
+            0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+            15% { opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--shard-x), var(--shard-y)) rotate(130deg); }
+        }
+
+        @keyframes finale-ring {
+            0% { opacity: 0.9; transform: scale(0.1); }
+            100% { opacity: 0; transform: scale(1.8); }
+        }
+
+        .finale-caption {
+            position: absolute;
+            right: 20px;
+            bottom: 13%;
+            left: 20px;
+            color: #fff;
+            font-size: clamp(18px, 3vw, 34px);
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-align: center;
+            text-shadow: 0 2px 18px #c18cff, 0 0 35px #6849bb;
+            animation: finale-caption 2.5s ease both;
+        }
+
+        @keyframes finale-caption {
+            0% { opacity: 0; transform: translateY(12px); }
+            18%, 78% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-8px); }
+        }
+
+        .finale-letterbox {
+            position: absolute;
+            right: 0;
+            left: 0;
+            height: 7vh;
+            background: #020207;
+            animation: finale-letterbox 1s ease-out both;
+        }
+
+        .finale-letterbox.top { top: 0; }
+        .finale-letterbox.bottom { bottom: 0; }
+
+        @keyframes finale-letterbox {
+            from { height: 0; }
+            to { height: 7vh; }
+        }
+
+        .queen-credits {
+            position: absolute;
+            inset: 0;
+            z-index: 161;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 100%, #261644 0%, #090914 56%, #020207 100%);
+            text-align: center;
+        }
+
+        .queen-credits-roll {
+            position: absolute;
+            top: 0;
+            right: 16px;
+            left: 16px;
+            animation: credits-roll 28s linear both;
+        }
+
+        @keyframes credits-roll {
+            from { transform: translateY(100vh); }
+            to { transform: translateY(-100%); }
+        }
+
+        .queen-credits-skip {
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            z-index: 2;
+            padding: 10px 16px;
+            border: 1px solid rgba(255,255,255,.4);
+            border-radius: 8px;
+            background: rgba(8,8,20,.8);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .queen-finale-scene, .finale-queen, .finale-core, .finale-beam, .finale-shard, .finale-ring, .finale-letterbox, .finale-caption, .queen-credits-roll {
+                animation-duration: 0.01ms;
+                animation-delay: 0ms;
+            }
+        }
+
         .hud-controls {
             position: absolute;
-            top: 100px;
+            top: 20px;
             right: 20px;
             display: flex;
             align-items: center;
             gap: 8px;
-            z-index: 25;
+            z-index: 105;
         }
 
         .hud-toggle, .hud-action {
@@ -134,6 +503,12 @@
 
         .hud-toggle input { accent-color: #4285F4; }
 
+        .hud-controls .hud-action { pointer-events: auto; }
+        .settings-options { display: grid; gap: 12px; text-align: left; }
+        .settings-options .hud-toggle { justify-content: space-between; }
+        .hide-top-left-hud .ui-overlay { display: none; }
+        #pause-screen, #settings-screen { z-index: 120; }
+
         #touch-mode-button { display: none; }
 
         @media (pointer: coarse) {
@@ -141,7 +516,7 @@
         }
 
         @media (max-width: 520px) {
-            .hud-controls { right: 12px; gap: 5px; }
+            .hud-controls { top: 132px; right: 12px; gap: 5px; }
             .hud-toggle, .hud-action { padding: 7px; font-size: 10px; }
         }
 
@@ -214,8 +589,8 @@
         </div>
     </div>
     <div class="hud-controls">
-        <label class="hud-toggle"><input id="mute-toggle" type="checkbox"> MUTE</label>
-        <label class="hud-toggle"><input id="reduced-effects-toggle" type="checkbox"> REDUCED FX</label>
+        <button class="hud-action hidden" id="pause-button" type="button" onclick="togglePause()" aria-pressed="false">PAUSE</button>
+        <button class="hud-action" id="settings-button" type="button" onclick="openSettings()">SETTINGS</button>
         <button class="hud-action" id="touch-mode-button" type="button" onclick="toggleMode()">SWITCH MODE</button>
     </div>
 
@@ -228,6 +603,57 @@
 
     <canvas id="gameCanvas"></canvas>
 
+    <div id="ship-intro" class="ship-intro hidden" aria-label="Blue ship introduction">
+        <div class="ship-intro-stars" aria-hidden="true"></div>
+        <div class="ship-intro-ring" aria-hidden="true"></div>
+        <div class="ship-intro-content">
+            <p class="ship-intro-kicker">NEBULA QUEST // FLIGHT SYSTEMS ONLINE</p>
+            <h2 id="ship-intro-title" class="ship-intro-title">THE FLASH</h2>
+            <svg id="ship-intro-flash" class="ship-intro-ship" viewBox="0 0 240 280" role="img" aria-label="Close-up of the blue Flash ship">
+                <g transform="translate(120 140) scale(5.2)">
+                    <path d="M-4 10 0 22 4 10Z" fill="#50CFFF">
+                        <animate attributeName="d" values="M-4 10 0 20 4 10Z;M-4 10 0 25 4 10Z;M-4 10 0 20 4 10Z" dur=".16s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values=".65;.95;.75" dur=".45s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M0 -22 8 -9 19 -3 14 7 8 5 7 16 0 12 -7 16 -8 5 -14 7 -19 -3 -8 -9Z" fill="#4285F4"/>
+                    <path d="M0 -23 6 -7 5 12 0 17 -5 12 -6 -7Z" fill="#D9F3FF"/>
+                    <ellipse cx="0" cy="-7" rx="3" ry="5" fill="#5DEBFF"/>
+                    <path d="M-13 0h4v2h-4zM9 0h4v2H9z" fill="#A6F5FF"/>
+                </g>
+            </svg>
+            <svg id="ship-intro-pro" class="ship-intro-ship hidden" viewBox="0 0 240 280" role="img" aria-label="Close-up of the purple PRO ship">
+                <g transform="translate(120 140) scale(4.2)">
+                    <path d="M-4 10 0 22 4 10Z" fill="#D69BFF">
+                        <animate attributeName="d" values="M-4 10 0 20 4 10Z;M-4 10 0 25 4 10Z;M-4 10 0 20 4 10Z" dur=".16s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values=".65;.95;.75" dur=".45s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M0 -29 8 -13 24 2 18 7 8 3 7 16 0 21 -7 16 -8 3 -18 7 -24 2 -8 -13Z" fill="#9B72CB"/>
+                    <path d="M0 -28 6 -12 5 15 0 20 -5 15 -6 -12Z" fill="#F2E8FF"/>
+                    <ellipse cx="0" cy="-9" rx="3.5" ry="7" fill="#8CF4FF"/>
+                    <path d="M-17 1h5v2h-5zM12 1h5v2h-5z" fill="#E6D3FF"/>
+                    <path d="M-4 9h8v3h-8z" fill="#6A4A9A"/>
+                </g>
+            </svg>
+            <svg id="ship-intro-ultra" class="ship-intro-ship hidden" viewBox="0 0 240 280" role="img" aria-label="Close-up of the red ULTRA ship">
+                <g transform="translate(120 140) scale(3)">
+                    <path d="M-4 10 0 22 4 10Z" fill="#FF784F">
+                        <animate attributeName="d" values="M-4 10 0 20 4 10Z;M-4 10 0 25 4 10Z;M-4 10 0 20 4 10Z" dur=".16s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values=".65;.95;.75" dur=".45s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M-8 -18 -29 -12 -26 5 -17 3 -13 17 -7 14 0 20 7 14 13 17 17 3 26 5 29 -12 8 -18 0 -29Z" fill="#863D4B"/>
+                    <path d="M0 -30 11 -17 13 13 0 22 -13 13 -11 -17Z" fill="#E8D6D0"/>
+                    <path d="M-25 -9h8v5h-8zM17 -9h8v5h-8zM-16 6h6v7h-6zM10 6h6v7h-6z" fill="#D96570"/>
+                    <path d="M0 -19 6 -11 5 -3 0 0 -5 -3 -6 -11Z" fill="#FFD08A"/>
+                    <path d="M-3 6h6v5h-6z" fill="none" stroke="#FFD08A" stroke-width="1.25"/>
+                    <ellipse cx="0" cy="0" rx="35" ry="37" fill="none" stroke="#FF9A75" stroke-width="2" opacity=".7">
+                        <animate attributeName="opacity" values=".4;.8;.5" dur="1.4s" repeatCount="indefinite"/>
+                    </ellipse>
+                </g>
+            </svg>
+        </div>
+        <button id="skip-ship-intro" class="ship-intro-skip" type="button" onclick="skipShipIntro()">SKIP INTRO · ESC</button>
+    </div>
+
     <div id="start-screen" class="status-msg">
         <h1 class="text-3xl font-bold mb-4">NEBULA QUEST</h1>
         <p class="text-sm opacity-60 mb-6 italic">Survive the nebula and defeat the Alien Queen.</p>
@@ -235,10 +661,10 @@
             <p><b class="text-blue-400">BLUE SHIP:</b> Fast and evasive. Your only ship at launch.</p>
             <p><b class="text-purple-400">PURPLE SHIP:</b> Auto-fire weapons. Unlock it by surviving the first hunt.</p>
             <p><b class="text-red-400">RED SHIP:</b> Kinetic shield. Unlock it by defeating the second miniboss.</p>
-            <p><b class="text-pink-300">BROODMOTHER:</b> Destroy nest pods with the purple weapon before they hatch hunters. Dodge marked spores, escape spreading webs, and survive her laser-to-lane combo to expose her. Later phases add more pods and hazards.</p>
+            <p><b class="text-pink-300">SPYDA:</b> Destroy nest pods with the purple weapon before they hatch random enemies. Dodge marked spores, escape spreading webs, and survive her laser-to-lane combo to expose her. Later phases add more pods and hazards.</p>
             <p><b class="text-pink-300">QUEEN:</b> Dodge her continuous weaving blood-bullet patterns, marked eruptions, sweeping blade, and the clone's aimed burst. The arena closes in each phase, and her core is exposed after each combo.</p>
             <p class="text-gray-400">Survive to earn score until the Warden. After its trial, earn points only from enemies and energy. Switch unlocked ships with SPACE, a mouse click, or the touch button.</p>
-            <p class="text-gray-400 mt-4 pt-4 border-t border-white/10"><b>Controls:</b> Choose your setup then play.<br>Mouse only (smooth follow) or Keyboard only (direct WASD/Arrow movement).</p>
+            <p class="text-gray-400 mt-4 pt-4 border-t border-white/10"><b>Controls:</b> Choose your setup then play.<br>Mouse only (smooth follow) or Keyboard only (direct WASD/Arrow movement). Press ESC to pause; use Settings at the top right to adjust the game.</p>
         </div>
 
         <div class="mb-6">
@@ -256,14 +682,14 @@
                 <button class="control-mode-btn difficulty-btn" id="hard-btn" type="button" aria-pressed="false" onclick="setDifficulty('HARD')">HARD</button>
                 <button class="control-mode-btn difficulty-btn active" id="nightmare-btn" type="button" aria-pressed="true" onclick="setDifficulty('NIGHTMARE')">NIGHTMARE</button>
             </div>
-            <p id="difficulty-description" class="text-xs opacity-60 mt-2">Nightmare only. Normal and Hard are here for decoration. Nice try.</p>
         </div>
 
         <div id="dev-boss-menu" class="hidden my-4 rounded-lg border border-purple-400/40 bg-purple-950/30 p-3" aria-live="polite">
             <p class="text-xs font-bold tracking-widest text-purple-200 mb-2">DEV BOSS SELECT</p>
+            <label class="hud-toggle mb-3"><span>INVINCIBLE BOSS TESTS ONLY</span><input id="dev-invincible-toggle" type="checkbox"></label>
             <div class="flex justify-center gap-2">
                 <button class="control-mode-btn difficulty-btn" type="button" onclick="startBossTest('warden')">WARDEN</button>
-                <button class="control-mode-btn difficulty-btn" type="button" onclick="startBossTest('broodmother')">BROODMOTHER</button>
+                <button class="control-mode-btn difficulty-btn" type="button" onclick="startBossTest('spyda')">SPYDA</button>
                 <button class="control-mode-btn difficulty-btn" type="button" onclick="startBossTest('queen')">QUEEN</button>
             </div>
         </div>
@@ -278,6 +704,153 @@
             <button class="btn" type="button" onclick="startGame()">RETRY</button>
             <button class="btn" type="button" onclick="returnToMenu()">BACK TO MENU</button>
         </div>
+    </div>
+
+    <div id="pause-screen" class="status-msg hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+        <h2 id="pause-title" class="text-2xl font-bold mb-3">PAUSED</h2>
+        <p class="opacity-70 mb-4">The nebula can wait.</p>
+        <div class="end-actions">
+            <button class="btn" type="button" onclick="togglePause()">RESUME</button>
+            <button class="btn" type="button" onclick="openSettings()">SETTINGS</button>
+        </div>
+        <button class="btn w-full" type="button" onclick="returnToMenu()">BACK TO MENU</button>
+    </div>
+
+    <div id="settings-screen" class="status-msg hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <h2 id="settings-title" class="text-2xl font-bold mb-5">SETTINGS</h2>
+        <div class="settings-options">
+            <label class="hud-toggle"><span>Mute game</span><input id="mute-toggle" type="checkbox"></label>
+            <label class="hud-toggle"><span>Reduced effects</span><input id="reduced-effects-toggle" type="checkbox"></label>
+            <label class="hud-toggle"><span>Hide top-left HUD</span><input id="hide-hud-toggle" type="checkbox"></label>
+            <label class="hud-toggle"><span>Hide popup phrases</span><input id="hide-phrases-toggle" type="checkbox"></label>
+            <label class="hud-toggle"><span>Show ship intro</span><input id="ship-intro-toggle" type="checkbox"></label>
+        </div>
+        <button class="btn w-full" type="button" onclick="closeSettings()">DONE</button>
+    </div>
+
+    <div id="difficulty-popup-backdrop" class="difficulty-popup-backdrop hidden">
+        <section id="difficulty-popup" class="difficulty-popup" role="dialog" aria-modal="true" aria-labelledby="difficulty-popup-title" aria-describedby="difficulty-popup-taunt">
+            <button class="difficulty-popup-close" type="button" onclick="closeDifficultyPopup()" aria-label="Close difficulty popup">CLOSE</button>
+            <p class="text-xs font-bold tracking-[0.25em] text-blue-300">DIFFICULTY REALITY CHECK</p>
+            <h2 id="difficulty-popup-title" class="text-2xl font-bold mt-2 pr-12"></h2>
+            <svg id="normal-difficulty-art" class="difficulty-popup-art hidden" viewBox="0 0 800 400" role="img" aria-label="A tiny spaceship takes a relaxed tour around a friendly pastel planet">
+                <defs>
+                    <linearGradient id="normal-sky" x2="0" y2="1"><stop stop-color="#151d59"/><stop offset="1" stop-color="#744da1"/></linearGradient>
+                    <linearGradient id="normal-planet" x2="0" y2="1"><stop stop-color="#7de8d2"/><stop offset="1" stop-color="#42a8bb"/></linearGradient>
+                </defs>
+                <rect width="800" height="400" fill="url(#normal-sky)"/>
+                <circle cx="100" cy="82" r="3" fill="#fff"/><circle cx="210" cy="44" r="4" fill="#fff3ad"/><circle cx="696" cy="87" r="3" fill="#fff"/><circle cx="600" cy="42" r="2" fill="#fff"/>
+                <path d="M60 265c130-115 535-115 680 0" fill="none" stroke="#e8b7ff" stroke-width="17" opacity=".7"/>
+                <circle cx="403" cy="243" r="142" fill="url(#normal-planet)"/>
+                <path d="M290 214c50-46 80 30 124-8s78 30 127-5v70c-63 27-95-25-144 12s-77-21-123 11z" fill="#67c789"/>
+                <path d="M327 323q77-42 154 0" fill="none" stroke="#d4fff2" stroke-width="10" stroke-linecap="round"/>
+                <g transform="translate(152 147) rotate(-12)">
+                    <path d="M-8 5l-47 22 13-34-13-34 47 22z" fill="#ffb766"/>
+                    <path d="M-25 0q22-38 62-21l29 21-29 21Q-3 38-25 0z" fill="#f5f7ff" stroke="#9ab7ff" stroke-width="5"/>
+                    <circle cx="24" cy="-3" r="9" fill="#71d9ff"/>
+                    <path d="M-4 28l20-10-2 24zM-4-28l20 10-2-24z" fill="#ad88ff"/>
+                    <path d="M-56 4l-22 16 7-19-7-19 22 16z" fill="#ffdf76"/>
+                </g>
+                <path d="M72 350q55-48 110 0m464 0q50-43 100 0" fill="none" stroke="#b99bff" stroke-width="7" opacity=".8"/>
+                <text x="400" y="375" fill="#fff" text-anchor="middle" font-size="18" font-family="sans-serif" letter-spacing="5">CRUISE CONTROL: COSMIC</text>
+            </svg>
+            <svg id="hard-difficulty-art" class="difficulty-popup-art hidden" viewBox="0 0 800 400" role="img" aria-label="A small spaceship faces a towering jagged fortress beneath a red storm">
+                <defs>
+                    <linearGradient id="hard-sky" x2="0" y2="1"><stop stop-color="#170e35"/><stop offset=".65" stop-color="#6e244f"/><stop offset="1" stop-color="#e2574c"/></linearGradient>
+                    <linearGradient id="hard-fortress" x2="0" y2="1"><stop stop-color="#7972a8"/><stop offset="1" stop-color="#292740"/></linearGradient>
+                </defs>
+                <rect width="800" height="400" fill="url(#hard-sky)"/>
+                <circle cx="630" cy="95" r="44" fill="#ffad73" opacity=".8"/>
+                <circle cx="78" cy="66" r="3" fill="#fff"/><circle cx="220" cy="91" r="2" fill="#fff"/><circle cx="738" cy="182" r="3" fill="#fff"/>
+                <path d="M0 281l112-86 86 39 91-121 92 117 74-83 90 80 78-69 177 117v125H0z" fill="#472d57"/>
+                <path d="M232 300V160l53 31V122l44 34V85l51 45V70l56 59V95l43 48v157z" fill="url(#hard-fortress)" stroke="#c3a3d9" stroke-width="6"/>
+                <path d="M318 300v-69q40-58 80 0v69m49 0v-49q31-42 62 0v49" fill="#211b34" stroke="#ff9c79" stroke-width="5"/>
+                <path d="M345 191h23v31h-23zm67-39h24v34h-24zm66 25h21v30h-21z" fill="#ffca79"/>
+                <g transform="translate(138 304) scale(.7)">
+                    <path d="M-8 5l-47 22 13-34-13-34 47 22z" fill="#ff784e"/>
+                    <path d="M-25 0q22-38 62-21l29 21-29 21Q-3 38-25 0z" fill="#e7ebff" stroke="#bcb2ff" stroke-width="5"/>
+                    <circle cx="24" cy="-3" r="9" fill="#ffdf75"/>
+                    <path d="M-4 28l20-10-2 24zM-4-28l20 10-2-24z" fill="#ff784e"/>
+                </g>
+                <path d="M58 365h684" stroke="#ff9c79" stroke-width="4" opacity=".75"/>
+                <text x="480" y="373" fill="#fff" text-anchor="middle" font-size="18" font-family="sans-serif" letter-spacing="5">FORTRESS OF QUESTIONABLE CHOICES</text>
+            </svg>
+            <p id="difficulty-popup-taunt" class="text-base font-semibold text-white/90"></p>
+        </section>
+    </div>
+
+    <div id="queen-finale" class="queen-finale hidden" aria-live="polite">
+        <div class="finale-letterbox top"></div>
+        <div class="finale-letterbox bottom"></div>
+        <svg class="queen-finale-scene" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+                <radialGradient id="finale-nebula"><stop stop-color="#7844a8" stop-opacity=".72"/><stop offset="1" stop-color="#0a0917" stop-opacity="0"/></radialGradient>
+                <radialGradient id="finale-heart"><stop stop-color="#fff7cf"/><stop offset=".35" stop-color="#ff85c8"/><stop offset="1" stop-color="#a43eff" stop-opacity="0"/></radialGradient>
+                <linearGradient id="finale-light" x2="1" y2=".15"><stop stop-color="#9deaff" stop-opacity="0"/><stop offset=".48" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#ffa5f3" stop-opacity="0"/></linearGradient>
+            </defs>
+            <rect width="1000" height="600" fill="#080817"/>
+            <ellipse cx="520" cy="285" rx="480" ry="290" fill="url(#finale-nebula)"/>
+            <g fill="#fff">
+                <circle cx="102" cy="103" r="2"/><circle cx="239" cy="176" r="1.5"/><circle cx="878" cy="90" r="2"/><circle cx="812" cy="245" r="1.5"/>
+                <circle cx="165" cy="376" r="1.5"/><circle cx="903" cy="438" r="2"/><circle cx="727" cy="139" r="1.4"/><circle cx="340" cy="74" r="1.6"/>
+                <circle cx="621" cy="505" r="1.4"/><circle cx="62" cy="252" r="1.3"/><circle cx="955" cy="312" r="1.3"/><circle cx="433" cy="468" r="1.3"/>
+            </g>
+            <path d="M0 510Q230 425 500 500T1000 485V600H0Z" fill="#17152d" opacity=".8"/>
+            <g transform="translate(500 300) scale(2)">
+                <g class="finale-queen" stroke-linejoin="round" stroke-linecap="round">
+                    <ellipse cx="0" cy="0" rx="133" ry="112" fill="none" stroke="#D96570" stroke-width="1.5" opacity=".72"/>
+                    <path d="M-37-43-101-77-78-34-119-18-67 0-99 44-47 34-31 69 0 52 31 69 47 34 99 44 67 0 119-18 78-34 101-77 37-43Z" fill="#45182D"/>
+                    <path d="M-33-41-72-83-62-28-42 7ZM33-41 72-83 62-28 42 7Z" fill="#79243D"/>
+                    <path d="M-40-46-34-97-13-69 0-119 13-69 34-97 40-46Z" fill="#351225"/>
+                    <path d="M0-103 7-73 0-63-7-73Z" fill="#F2B48B"/>
+                    <path d="M0-60C44-58 52-14 42 19L27 53 0 75-27 53-42 19C-52-14-44-58 0-60Z" fill="#B63852"/>
+                    <path d="M-25-42-61-50-45-20-29-14ZM25-42 61-50 45-20 29-14Z" fill="#51182E"/>
+                    <ellipse cx="0" cy="-33" rx="25" ry="20" fill="#210E22"/>
+                    <path d="M-17-35-3-30-16-26ZM17-35 3-30 16-26Z" fill="#FF435B"/>
+                    <g class="finale-core">
+                        <ellipse cx="0" cy="12" rx="20" ry="27" fill="#F25B69"/>
+                        <ellipse cx="0" cy="12" rx="9" ry="17" fill="#54172E"/>
+                        <path d="M-15 8 0-1 15 8 0 24Z" fill="url(#finale-heart)" opacity=".8"/>
+                    </g>
+                    <path d="M-14 48-7 60 0 51 7 60 14 48" fill="none" stroke="#E77A76" stroke-width="3"/>
+                </g>
+            </g>
+            <ellipse class="finale-ring" cx="500" cy="346" rx="100" ry="72" fill="none" stroke="#ffeaff" stroke-width="5"/>
+            <g class="finale-beam">
+                <path d="M0 478 515 336 1000 284 524 358Z" fill="url(#finale-light)"/>
+                <path d="m0 478 515-142" stroke="#d8fbff" stroke-width="4" opacity=".9"/>
+            </g>
+            <g fill="#ffd6ff">
+                <path class="finale-shard" style="--shard-x:-150px;--shard-y:-110px" d="m498 337 15-34 5 44z"/>
+                <path class="finale-shard" style="--shard-x:135px;--shard-y:-125px" d="m513 340 31-20-24 42z"/>
+                <path class="finale-shard" style="--shard-x:-120px;--shard-y:130px" d="m493 350-28 8 32 13z"/>
+                <path class="finale-shard" style="--shard-x:155px;--shard-y:95px" d="m510 350 28 8-32 13z"/>
+            </g>
+        </svg>
+        <p id="finale-caption" class="finale-caption">THE CROWN OF THE NEBULA BREAKS...</p>
+        <button class="queen-credits-skip" type="button" onclick="skipQueenCinematic()">SKIP TO CREDITS</button>
+    </div>
+
+    <div id="queen-credits" class="queen-credits hidden" aria-label="Game credits">
+        <div class="queen-credits-roll">
+            <p class="text-xs tracking-[0.45em] text-purple-200">AN ORIGINAL ARCADE ADVENTURE</p>
+            <h2 class="text-5xl font-bold tracking-[0.2em] mt-5">NEBULA QUEST</h2>
+            <p class="text-lg italic text-blue-100 mt-4">Beyond the last light, a new dawn.</p>
+            <div class="mt-16 space-y-3">
+                <h3 class="text-xs tracking-[0.4em] text-pink-200">A STARFALL ARCADE STORY</h3>
+                <p class="text-2xl font-semibold">Created by</p><p class="text-xl">The Nebula Quest Team</p>
+                <p class="mt-10 text-xs tracking-[0.35em] text-pink-200">GAME DESIGN</p><p class="text-xl">Mira Vale · Orion Quill</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">COMBAT & ENCOUNTER DESIGN</p><p class="text-xl">Aster Wynn · The Deep-Space Systems Unit</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">VISUALS & ANIMATION</p><p class="text-xl">Nova Reyes · Celeste Ardent</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">SOUND DESIGN</p><p class="text-xl">Echo Meridian</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">QUALITY ASSURANCE</p><p class="text-xl">The Last-Star Test Pilots</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">PLAY TESTER</p><p class="text-xl">Gerzon Bonilla</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">SPECIAL THANKS</p><p class="text-xl">Every pilot who kept going</p><p class="text-xl">and every star that showed the way.</p>
+                <p class="mt-16 text-3xl font-bold tracking-[0.35em]">THE END</p>
+                <p class="mt-6 pb-16 text-sm opacity-60">A fictional production · Made for the love of space games</p>
+            </div>
+        </div>
+        <button class="queen-credits-skip" type="button" onclick="finishQueenCredits()">SKIP CREDITS</button>
     </div>
 </div>
 
@@ -295,6 +868,7 @@
     const campaignStatusEl = document.getElementById('campaign-status');
 
     let gameActive = false;
+    const queenFinale = { phase: 'idle', frame: 0 };
     let score = 0;
     let frame = 0;
     let shake = 0;
@@ -303,8 +877,20 @@
     let modeTransition = 0;  // For smooth mode switching
     let controlMode = null; // 'mouse' or 'keyboard'
     const selectedDifficulty = 'NIGHTMARE';
-    let isMuted = false;
-    let reducedEffects = false;
+    const hasPlayedBefore = localStorage.getItem('nebulaQuestHasPlayed') === 'true';
+    const shipIntro = { active: false, frame: 0, duration: 300, shipId: 'FLASH' };
+    const savedSetting = (key, defaultValue) => {
+        const value = localStorage.getItem(`nebulaQuest.${key}`);
+        return value === null ? defaultValue : value === 'true';
+    };
+    let isMuted = savedSetting('muted', false);
+    let reducedEffects = savedSetting('reducedEffects', false);
+    let hideTopLeftHud = savedSetting('hideTopLeftHud', false);
+    let hidePopupPhrases = savedSetting('hidePopupPhrases', hasPlayedBefore);
+    let showShipIntro = savedSetting('showShipIntro', true);
+    let gamePaused = false;
+    let settingsOpen = false;
+    let settingsReturnToPause = false;
     
     let ammo = 10;
     let maxAmmo = 10;
@@ -317,8 +903,12 @@
 
     let bossActive = false;
     let boss = null;
+    let devBossTest = false;
+    let devInvincible = false;
     let unlockedShips = { FLASH: true, PRO: false, ULTRA: false };
     let campaignStage = 0;
+    let forcedShipTimer = 0;
+    let modeBeforeShipShowcase = null;
     const DEV_CODE = '$%)*';
     let devCodeBuffer = '';
     let enemies = [];
@@ -344,14 +934,17 @@
         if (bossActive && boss) {
             const encounterNames = {
                 warden: 'THE WARDEN - SURVIVE',
-                broodmother: 'THE BROODMOTHER - PURPLE WEAPON',
+                spyda: 'THE SPYDA - PURPLE WEAPON',
                 queen: 'ALIEN QUEEN - FINAL HUNT'
             };
             campaignStatusEl.innerText = `${selectedDifficulty}  |  ${encounterNames[boss.kind]}`;
             return;
         }
-        const nextMilestone = campaignStage === 0 ? 'WARDEN 2,000' : campaignStage === 1 ? 'BROODMOTHER 5,000' : 'QUEEN 8,888';
-        campaignStatusEl.innerText = `${selectedDifficulty}  |  ${campaignStage === 0 ? 'EASY' : campaignStage === 1 ? 'MEDIUM' : 'HARD'} SECTOR  |  ${nextMilestone}  |  SHIPS: ${unlockedShips.PRO ? 'BLUE + PURPLE' : 'BLUE'}${unlockedShips.ULTRA ? ' + RED' : ''}`;
+        const nextMilestone = campaignStage === 0 ? 'WARDEN 2,000' : campaignStage === 1 ? 'SPYDA 5,000' : 'QUEEN 8,888';
+        const showcaseStatus = forcedShipTimer > 0
+            ? `  |  ${currentMode.id === 'PRO' ? 'PURPLE' : 'RED'} SHIP SHOWCASE: ${Math.ceil(forcedShipTimer / 60)}s`
+            : '';
+        campaignStatusEl.innerText = `${selectedDifficulty}  |  ${campaignStage === 0 ? 'EASY' : campaignStage === 1 ? 'MEDIUM' : 'HARD'} SECTOR  |  ${nextMilestone}  |  SHIPS: ${unlockedShips.PRO ? 'BLUE + PURPLE' : 'BLUE'}${unlockedShips.ULTRA ? ' + RED' : ''}${showcaseStatus}`;
     }
 
     function updateShipIndicator() {
@@ -372,40 +965,107 @@
         updateCampaignStatus();
     }
 
+    function startShipShowcase(shipId) {
+        modeBeforeShipShowcase = currentMode.id;
+        forcedShipTimer = 5 * 60;
+        currentMode = MODES[shipId];
+        modeTransition = 0.5;
+        updateShipIndicator();
+        const shipName = shipId === 'PRO' ? 'PURPLE' : 'RED';
+        if (showShipIntro) startShipIntro(shipId);
+        else announce(`${shipName} SHIP UNLOCKED - 5 SECOND TRIAL`, MODES[shipId].color);
+    }
+
+    function finishShipShowcase() {
+        forcedShipTimer = 0;
+        const previousMode = modeBeforeShipShowcase;
+        modeBeforeShipShowcase = null;
+        currentMode = unlockedShips[previousMode] ? MODES[previousMode] : MODES.FLASH;
+        modeTransition = 0.5;
+        updateShipIndicator();
+    }
+
     // SOUND SYSTEM
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    const audioContext = AudioContextConstructor ? new AudioContextConstructor() : null;
+    const masterGain = audioContext ? audioContext.createGain() : null;
+    if (masterGain) {
+        masterGain.gain.value = isMuted ? 0 : 1;
+        masterGain.connect(audioContext.destination);
+    }
     const soundSystem = {
-        play(freq, duration = 0.1, type = 'sine', volume = 0.3) {
-            if (isMuted) return;
+        play(freq, duration = 0.1, type = 'sine', volume = 0.3, endFreq = freq * 0.7, delay = 0) {
+            if (isMuted || !audioContext) return;
+            if (audioContext.state === 'suspended') audioContext.resume();
             const osc = audioContext.createOscillator();
             const gain = audioContext.createGain();
             osc.connect(gain);
-            gain.connect(audioContext.destination);
+            gain.connect(masterGain);
             osc.type = type;
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(volume, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + duration);
+            const startTime = audioContext.currentTime + delay;
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), startTime + duration);
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.exponentialRampToValueAtTime(volume, startTime + Math.min(0.015, duration / 4));
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
         },
-        shoot() { this.play(400, 0.08, 'sine', 0.2); },
-        impact() { this.play(220, 0.15, 'sine', 0.35); },
-        powerup() { this.play(600, 0.2, 'sine', 0.3); },
-        enemyFire() { this.play(300, 0.12, 'sine', 0.2); },
-        bossFire() { this.play(250, 0.18, 'sine', 0.35); },
-        laser() { this.play(800, 0.3, 'sine', 0.25); },
-        mineExplode() { this.playComplex([200, 350, 150], [0.2, 0.15, 0.25]); },
-        shieldHit() { this.play(550, 0.1, 'sine', 0.25); },
-        modeSwitch() { this.playComplex([600, 800], [0.08, 0.08]); },
-        bossEnter() { this.playComplex([150, 200, 250, 300], [0.15, 0.15, 0.15, 0.15]); },
-        vulnerability() { this.playComplex([800, 600, 800], [0.1, 0.1, 0.1]); },
-        damage() { this.play(150, 0.2, 'sine', 0.4); },
+        playComplex(freqs, durations, type = 'sine', volume = 0.25, spacing = 0.05) {
+            freqs.forEach((freq, index) => this.play(freq, durations[index] || 0.1, type, volume, freq * 0.82, index * spacing));
+        },
+        shoot() {
+            this.play(760, 0.055, 'square', 0.08, 310);
+            this.play(1520, 0.035, 'sine', 0.035, 680, 0.01);
+        },
+        impact() {
+            this.play(210, 0.12, 'triangle', 0.16, 65);
+            this.play(680, 0.045, 'square', 0.045, 190);
+        },
+        enemyDestroyed(type = 'blue') {
+            const pitch = { blue: 520, green: 390, red: 300, yellow: 650, orange: 240 }[type] || 420;
+            this.play(pitch, 0.11, 'triangle', 0.12, pitch * 0.32);
+        },
+        powerup() { this.playComplex([520, 780, 1040], [0.09, 0.1, 0.16], 'sine', 0.16, 0.075); },
+        enemyFire(kind = 'shot') {
+            const pitch = kind === 'pulse' ? 245 : 360;
+            this.play(pitch, 0.11, 'square', 0.07, pitch * 0.38);
+        },
+        bossFire(kind = 'queen') {
+            const pitch = kind === 'warden' ? 185 : kind === 'spyda' ? 270 : 145;
+            this.play(pitch, 0.22, 'sawtooth', 0.12, pitch * 0.48);
+            this.play(pitch * 1.52, 0.16, 'triangle', 0.07, pitch * 0.75, 0.025);
+        },
+        laser() {
+            this.play(180, 0.4, 'sawtooth', 0.1, 1100);
+            this.play(920, 0.32, 'sine', 0.08, 210, 0.12);
+        },
+        mineExplode() {
+            this.playComplex([115, 180, 82], [0.22, 0.18, 0.32], 'triangle', 0.19, 0.04);
+            this.play(95, 0.28, 'sawtooth', 0.08, 35, 0.03);
+        },
+        shieldHit() {
+            this.play(720, 0.08, 'square', 0.1, 300);
+            this.play(430, 0.14, 'triangle', 0.12, 820, 0.015);
+        },
+        modeSwitch() { this.playComplex([430, 650, 970], [0.07, 0.07, 0.11], 'sine', 0.11, 0.045); },
+        bossEnter() {
+            this.playComplex([92, 138, 184, 138], [0.28, 0.24, 0.34, 0.4], 'sawtooth', 0.11, 0.16);
+            this.play(55, 0.8, 'sine', 0.1, 32, 0.08);
+        },
+        bossPhase() { this.playComplex([170, 255, 340, 510], [0.12, 0.12, 0.16, 0.24], 'triangle', 0.14, 0.09); },
+        bossDefeated() { this.playComplex([520, 390, 660, 880], [0.12, 0.12, 0.18, 0.35], 'sine', 0.16, 0.11); },
+        spydaDefeated() {
+            this.playComplex([310, 230, 155, 105], [0.22, 0.28, 0.38, 0.55], 'sawtooth', 0.12, 0.16);
+            this.playComplex([690, 520, 390], [0.12, 0.18, 0.3], 'triangle', 0.1, 0.14);
+        },
+        vulnerability() { this.playComplex([520, 780, 1040, 1390], [0.08, 0.1, 0.1, 0.18], 'sine', 0.14, 0.065); },
+        damage() {
+            this.play(105, 0.48, 'sawtooth', 0.2, 38);
+            this.play(310, 0.22, 'triangle', 0.13, 55, 0.035);
+        },
         winFanfare() {
-            const freqs = [400, 500, 600, 700, 600, 500, 400];
-            freqs.forEach((f, i) => setTimeout(() => this.play(f, 0.15, 'sine', 0.3), i * 120));
-        },
-        playComplex(freqs, durations) {
-            freqs.forEach((f, i) => setTimeout(() => this.play(f, durations[i] || 0.1, 'sine', 0.25), i * 50));
+            this.playComplex([392, 494, 587, 784, 988], [0.14, 0.14, 0.18, 0.22, 0.42], 'sine', 0.16, 0.12);
         }
     };
 
@@ -424,7 +1084,7 @@
         }
     });
     window.addEventListener('touchmove', e => {
-        if (gameActive && controlMode === 'mouse' && e.touches.length && !e.target.closest('button')) {
+        if (gameActive && !gamePaused && !settingsOpen && controlMode === 'mouse' && e.touches.length && !e.target.closest('button')) {
             e.preventDefault();
             player.targetX = e.touches[0].clientX; 
             player.targetY = e.touches[0].clientY;
@@ -434,15 +1094,56 @@
         if (e.button === 0 && controlMode === 'mouse') toggleMode();
     });
 
+    document.getElementById('mute-toggle').checked = isMuted;
+    document.getElementById('reduced-effects-toggle').checked = reducedEffects;
+    document.getElementById('hide-hud-toggle').checked = hideTopLeftHud;
+    document.getElementById('hide-phrases-toggle').checked = hidePopupPhrases;
+    document.getElementById('ship-intro-toggle').checked = showShipIntro;
+    document.body.classList.toggle('hide-top-left-hud', hideTopLeftHud);
+
     document.getElementById('mute-toggle').addEventListener('change', e => {
         isMuted = e.target.checked;
+        if (masterGain) masterGain.gain.setTargetAtTime(isMuted ? 0 : 1, audioContext.currentTime, 0.01);
+        localStorage.setItem('nebulaQuest.muted', String(isMuted));
     });
     document.getElementById('reduced-effects-toggle').addEventListener('change', e => {
         reducedEffects = e.target.checked;
+        localStorage.setItem('nebulaQuest.reducedEffects', String(reducedEffects));
+    });
+    document.getElementById('hide-hud-toggle').addEventListener('change', e => {
+        hideTopLeftHud = e.target.checked;
+        document.body.classList.toggle('hide-top-left-hud', hideTopLeftHud);
+        localStorage.setItem('nebulaQuest.hideTopLeftHud', String(hideTopLeftHud));
+    });
+    document.getElementById('hide-phrases-toggle').addEventListener('change', e => {
+        hidePopupPhrases = e.target.checked;
+        if (hidePopupPhrases) document.querySelectorAll('.announcement').forEach(el => el.remove());
+        localStorage.setItem('nebulaQuest.hidePopupPhrases', String(hidePopupPhrases));
+    });
+    document.getElementById('ship-intro-toggle').addEventListener('change', e => {
+        showShipIntro = e.target.checked;
+        localStorage.setItem('nebulaQuest.showShipIntro', String(showShipIntro));
+        if (!showShipIntro && shipIntro.active) finishShipIntro();
+    });
+    document.getElementById('dev-invincible-toggle').addEventListener('change', e => {
+        devInvincible = e.target.checked;
+    });
+    document.getElementById('difficulty-popup-backdrop').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeDifficultyPopup();
     });
 
     // Keyboard controls
     window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            if (shipIntro.active) skipShipIntro();
+            else if (queenFinale.phase === 'cinematic') skipQueenCinematic();
+            else if (queenFinale.phase === 'credits') finishQueenCredits();
+            else if (!document.getElementById('difficulty-popup-backdrop').classList.contains('hidden')) closeDifficultyPopup();
+            else if (settingsOpen) closeSettings();
+            else if (gameActive) togglePause();
+            return;
+        }
         keys[e.key.toLowerCase()] = true;
         if (!gameActive && !document.getElementById('start-screen').classList.contains('hidden')) {
             if (e.key.length === 1) {
@@ -455,7 +1156,7 @@
             }
         }
         // Spacebar for mode switching
-        if (e.key === ' ' && gameActive) {
+        if (e.key === ' ' && gameActive && !gamePaused && !settingsOpen) {
             e.preventDefault();
             toggleMode();
         }
@@ -481,19 +1182,28 @@
             button.classList.toggle('active', isSelected);
             button.setAttribute('aria-pressed', String(isSelected));
         }
-        if (difficulty !== 'NIGHTMARE') {
-            const taunts = {
-                NORMAL: 'Normal? The training wheels are in another galaxy. Nightmare stays on.',
-                HARD: 'Hard? Bold choice. Still not Nightmare. You get Nightmare anyway.'
-            };
-            document.getElementById('difficulty-description').innerText = taunts[difficulty] || 'No escape. Nightmare only.';
+        const popup = document.getElementById('difficulty-popup-backdrop');
+        if (difficulty === 'NORMAL' || difficulty === 'HARD') {
+            const isNormal = difficulty === 'NORMAL';
+            document.getElementById('difficulty-popup-title').innerText = isNormal ? 'NORMAL? THAT IS ADORABLE.' : 'HARD MODE? BOLD MOVE.';
+            document.getElementById('difficulty-popup-taunt').innerText = isNormal
+                ? 'Training wheels are in another galaxy. Nightmare is still the only difficulty.'
+                : 'A little harder, sure. Still not Nightmare. You get Nightmare anyway.';
+            document.getElementById('normal-difficulty-art').classList.toggle('hidden', !isNormal);
+            document.getElementById('hard-difficulty-art').classList.toggle('hidden', isNormal);
+            popup.classList.remove('hidden');
             return;
         }
-        document.getElementById('difficulty-description').innerText = 'Nightmare only. Normal and Hard are here for decoration. Nice try.';
+        closeDifficultyPopup();
+    }
+
+    function closeDifficultyPopup() {
+        document.getElementById('difficulty-popup-backdrop').classList.add('hidden');
     }
 
     function toggleMode() {
-        if (!gameActive) return;
+        if (!gameActive || gamePaused || settingsOpen) return;
+        if (forcedShipTimer > 0) return;
 
         if (currentMode.id === 'PRO' && ammo < 10 && !isReloading) {
             isReloading = true;
@@ -509,6 +1219,47 @@
         updateShipIndicator();
         createExplosion(player.x, player.y, currentMode.color, 15);  // More particles
         soundSystem.modeSwitch();
+    }
+
+    function syncShipIntroPause() {
+        document.getElementById('ship-intro').classList.toggle('paused', gamePaused || settingsOpen);
+    }
+
+    function togglePause() {
+        if (!gameActive || settingsOpen) return;
+        gamePaused = !gamePaused;
+        keys = {};
+        syncShipIntroPause();
+        document.getElementById('pause-screen').classList.toggle('hidden', !gamePaused);
+        const pauseButton = document.getElementById('pause-button');
+        pauseButton.innerText = gamePaused ? 'RESUME' : 'PAUSE';
+        pauseButton.setAttribute('aria-pressed', String(gamePaused));
+    }
+
+    function openSettings() {
+        settingsReturnToPause = gameActive && gamePaused;
+        if (gameActive) gamePaused = true;
+        settingsOpen = true;
+        keys = {};
+        syncShipIntroPause();
+        const pauseButton = document.getElementById('pause-button');
+        pauseButton.innerText = gameActive ? 'RESUME' : 'PAUSE';
+        pauseButton.setAttribute('aria-pressed', String(gameActive));
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.remove('hidden');
+    }
+
+    function closeSettings() {
+        if (!settingsOpen) return;
+        settingsOpen = false;
+        keys = {};
+        document.getElementById('settings-screen').classList.add('hidden');
+        gamePaused = gameActive && settingsReturnToPause;
+        syncShipIntroPause();
+        document.getElementById('pause-screen').classList.toggle('hidden', !gamePaused);
+        const pauseButton = document.getElementById('pause-button');
+        pauseButton.innerText = gamePaused ? 'RESUME' : 'PAUSE';
+        pauseButton.setAttribute('aria-pressed', String(gamePaused));
     }
 
     function createExplosion(x, y, color, count, size = 3) {
@@ -530,6 +1281,7 @@
     }
 
     function announce(text, color) {
+        if (hidePopupPhrases) return;
         const el = document.createElement('div');
         el.className = 'announcement';
         el.innerText = text;
@@ -541,7 +1293,7 @@
     function spawn() {
         if (bossActive) return;
         if (!unlockedShips.PRO && score >= 2000) { startBoss('warden'); return; }
-        if (!unlockedShips.ULTRA && score >= 5000) { startBoss('broodmother'); return; }
+        if (!unlockedShips.ULTRA && score >= 5000) { startBoss('spyda'); return; }
         if (score >= 8888) { startBoss('queen'); return; }
 
         const obstacleInterval = Math.max(1, Math.floor((campaignStage === 0 ? 105 : campaignStage === 1 ? 88 : 74) * 0.78));
@@ -582,20 +1334,7 @@
             else if (spawnRoll < 0.58) type = 'blue';
             else if (spawnRoll < 0.82) type = 'green';
 
-            if (type) {
-                let targetY = (type === 'yellow' || type === 'orange') ? 60 + Math.random() * 100 : (type === 'green' ? 50 + Math.random() * 80 : 100 + Math.random() * 200);
-                enemies.push({
-                    type: type,
-                    x: Math.random() * canvas.width,
-                    y: -50,
-                    targetY: targetY,
-                    state: 'DESCEND',
-                    timer: 0,
-                    trackX: 0, trackY: 0, // For orange tracking
-                    lifetime: type === 'yellow' ? 600 : (type === 'green' ? 600 : (type === 'orange' ? 180 : 0)),
-                    vx: 0, vy: 0
-                });
-            }
+            if (type) enemies.push(createEnemy(type, Math.random() * canvas.width, -50));
         }
 
         if (frame % collectibleInterval === 0) {
@@ -612,40 +1351,64 @@
         en.vy = -1.5;
     }
 
+    function createEnemy(type, x, y) {
+        return {
+            type,
+            x,
+            y,
+            targetY: (type === 'yellow' || type === 'orange')
+                ? 60 + Math.random() * 100
+                : type === 'green' ? 50 + Math.random() * 80 : 100 + Math.random() * 200,
+            state: 'DESCEND',
+            timer: 0,
+            trackX: 0,
+            trackY: 0,
+            lifetime: type === 'yellow' || type === 'green' ? 600 : type === 'orange' ? 180 : 0,
+            vx: 0,
+            vy: 0
+        };
+    }
+
     function startBoss(kind = 'queen') {
+        if (kind === 'queen') {
+            score = 8888;
+            scoreEl.innerText = score;
+        }
         bossActive = true;
         obstacles = []; enemies = []; enemyBullets = []; enemyPulses = [];
         collectibles = []; bossBullets = []; mines = []; lasers = [];
         const isWarden = kind === 'warden';
-        const isBroodmother = kind === 'broodmother';
-        const encounterLabel = isWarden ? 'THE WARDEN EMERGES' : isBroodmother ? 'BROODMOTHER UNSEALED' : 'ALIEN QUEEN AWAKENS';
+        const isSpyda = kind === 'spyda';
+        const encounterLabel = isWarden ? 'THE WARDEN EMERGES' : isSpyda ? 'SPYDA UNSEALED' : 'ALIEN QUEEN AWAKENS';
         boss = {
             kind, x: canvas.width / 2, y: -200, targetX: canvas.width / 2, targetY: 150,
-            hp: isWarden ? 1 : isBroodmother ? 1050 : 2800,
-            maxHp: isWarden ? 1 : isBroodmother ? 1050 : 2800,
+            hp: isWarden ? 1 : isSpyda ? 1050 : 2800,
+            maxHp: isWarden ? 1 : isSpyda ? 1050 : 2800,
             timeRemaining: isWarden ? 3600 : 0, shieldAngle: 0, attackTimer: 0, attackCount: 0,
             isVulnerable: false, vulnerableTimer: 0, diveWarning: 0, isDiving: false,
             waveWarning: 0, waveGap: 0, waveQueued: false, attackQueued: false, coreHitCooldown: 0,
-            broodLaser: null, phase: 1,
-            broodComboState: 'idle', broodComboTimer: 80, broodPodsInitialized: false,
-            broodPodSpawnTimer: 360,
-            broodPods: [], broodHunters: [], broodWebs: [], broodSporeMarks: [],
-            broodHazardCooldown: 0,
+            spydaLaser: null, phase: 1,
+            spydaComboState: 'idle', spydaComboTimer: 80, spydaPodsInitialized: false,
+            spydaPodSpawnTimer: 360,
+            spydaPods: [], spydaWebs: [], spydaSporeMarks: [],
+            spydaPhaseThreeHp: 0, spydaMinisDefeated: 0, spydaMiniSpawnTimer: 0, spydaMiniWarden: null,
+            spydaHazardCooldown: 0,
             queenComboState: 'idle', queenComboTimer: 90, queenSweepY: -40, queenSweepTimer: 0,
             queenBulletTimer: 12, queenSpiralAngle: 0, queenVolleyCount: 0,
             queenCloneTimer: 200, queenCloneWarning: 0, queenCloneX: canvas.width / 2,
             queenCloneY: canvas.height * 0.7, queenCloneTargetX: 0, queenCloneTargetY: 0,
             queenHazardCooldown: 0, bloodMarks: []
         };
-        bossPhaseEl.innerText = isWarden ? 'SURVIVE - 60 SECONDS' : isBroodmother ? 'Phase 1 - The Nest Stirs' : 'Phase 1 - Blood Awakening';
+        bossPhaseEl.innerText = isWarden ? 'SURVIVE - 60 SECONDS' : isSpyda ? 'Phase 1 - The Nest Stirs' : 'Phase 1 - Blood Awakening';
         bossBar.style.width = '100%';
         bossUI.style.display = 'block';
         updateCampaignStatus();
-        announce(encounterLabel, isWarden ? '#70B9FF' : isBroodmother ? '#C18CFF' : '#D96570');
+        announce(encounterLabel, isWarden ? '#70B9FF' : isSpyda ? '#C18CFF' : '#D96570');
         soundSystem.bossEnter();
     }
 
     function finishMiniboss(kind) {
+        if (kind !== 'warden' && kind !== 'spyda') soundSystem.bossDefeated();
         bossActive = false;
         boss = null;
         enemies = [];
@@ -658,8 +1421,64 @@
         campaignStage = kind === 'warden' ? 1 : 2;
         if (kind === 'warden') unlockShip('PRO', false);
         else unlockShip('ULTRA', false);
-        announce(campaignStage === 1 ? 'PURPLE SHIP UNLOCKED - MEDIUM SECTOR' : 'RED SHIP UNLOCKED - HARD SECTOR', campaignStage === 1 ? '#C18CFF' : '#FF8A4C');
-        updateCampaignStatus();
+        startShipShowcase(kind === 'warden' ? 'PRO' : 'ULTRA');
+    }
+
+    function beginWardenDefeat() {
+        if (!boss || boss.defeating) return;
+        boss.defeating = true;
+        boss.defeatDuration = 210;
+        boss.defeatTimer = boss.defeatDuration;
+        boss.defeatBurstDone = false;
+        boss.attackQueued = false;
+        bossPhaseEl.innerText = 'WARDEN DEFEATED';
+        bossBar.style.width = '0%';
+        enemies = [];
+        enemyBullets = [];
+        enemyPulses = [];
+        obstacles = [];
+        collectibles = [];
+        bullets = [];
+        bossBullets = [];
+        mines = [];
+        lasers = [];
+        particles = [];
+        soundSystem.bossDefeated();
+        createExplosion(boss.x, boss.y, '#8CEBFF', 30, 5);
+        shake = 12;
+        screenFlash = 0.45;
+    }
+
+    function beginSpydaDefeat() {
+        if (!boss || boss.defeating) return;
+        boss.defeating = true;
+        boss.defeatDuration = 240;
+        boss.defeatTimer = boss.defeatDuration;
+        boss.defeatBurstDone = false;
+        boss.isVulnerable = false;
+        boss.spydaLaser = null;
+        boss.spydaPods = [];
+        boss.spydaMiniWarden = null;
+        boss.spydaWebs = [];
+        boss.spydaSporeMarks = [];
+        boss.waveQueued = false;
+        bossPhaseEl.innerText = 'SPYDA DEFEATED';
+        bossBar.style.width = '0%';
+        enemies = [];
+        enemyBullets = [];
+        enemyPulses = [];
+        obstacles = [];
+        collectibles = [];
+        bullets = [];
+        bossBullets = [];
+        mines = [];
+        lasers = [];
+        particles = [];
+        soundSystem.spydaDefeated();
+        createExplosion(boss.x, boss.y, '#C18CFF', 28, 5);
+        createExplosion(boss.x, boss.y + 24, '#7DE8D2', 18, 4);
+        shake = 8;
+        screenFlash = 0.25;
     }
 
     function queenArenaMargin() {
@@ -691,16 +1510,16 @@
         }
     }
 
-    function broodmotherWebSlowFactor() {
-        if (!bossActive || !boss || boss.kind !== 'broodmother') return 1;
-        return boss.broodWebs.some(web =>
+    function spydaWebSlowFactor() {
+        if (!bossActive || !boss || boss.kind !== 'spyda') return 1;
+        return boss.spydaWebs.some(web =>
             Math.hypot(player.x - web.x, player.y - web.y) < web.radius
         ) ? 0.55 : 1;
     }
 
-    function hitByBroodmotherHazard() {
-        if (!gameActive || boss.broodHazardCooldown > 0) return;
-        boss.broodHazardCooldown = 36;
+    function hitBySpydaHazard() {
+        if (!gameActive || boss.spydaHazardCooldown > 0) return;
+        boss.spydaHazardCooldown = 36;
         if (currentMode.shield) {
             ultraEnergy = Math.max(0, ultraEnergy - 8);
             soundSystem.shieldHit();
@@ -710,9 +1529,10 @@
         }
     }
 
-    function spawnBroodmotherPods(count) {
+    function spawnSpydaPods(count) {
+        if (boss.phase >= 3) return;
         const maxPods = 2 + boss.phase;
-        const podCount = Math.min(count, maxPods - boss.broodPods.length);
+        const podCount = Math.min(count, maxPods - boss.spydaPods.length);
         const margin = Math.min(70, canvas.width * 0.1);
         for (let i = 0; i < podCount; i++) {
             let x = margin + Math.random() * Math.max(1, canvas.width - margin * 2);
@@ -721,7 +1541,7 @@
                 x = margin + Math.random() * Math.max(1, canvas.width - margin * 2);
                 y = canvas.height * (0.28 + Math.random() * 0.42);
             }
-            boss.broodPods.push({
+            boss.spydaPods.push({
                 x, y, hp: 3 + Math.floor(boss.phase / 2), maxHp: 3 + Math.floor(boss.phase / 2),
                 hatchTimer: 330 - boss.phase * 35, hatchInterval: 330 - boss.phase * 35,
                 pulse: Math.random() * Math.PI * 2
@@ -729,19 +1549,142 @@
         }
     }
 
+    function spawnSpydaMiniWarden() {
+        const round = boss.spydaMinisDefeated + 1;
+        const mini = {
+            round,
+            x: boss.x,
+            y: boss.y + 80,
+            hp: round === 1 ? 16 : 24,
+            maxHp: round === 1 ? 16 : 24,
+            spawnProgress: 0,
+            attackTimer: round === 1 ? 9 : 14
+        };
+        boss.spydaMiniWarden = mini;
+        boss.isVulnerable = false;
+        announce(`MINI WARDEN ${round} EMERGES`, '#8CEBFF');
+        soundSystem.bossEnter();
+    }
+
+    function defeatSpydaMiniWarden() {
+        const mini = boss.spydaMiniWarden;
+        if (!mini) return;
+        boss.spydaMinisDefeated++;
+        boss.spydaMiniWarden = null;
+        boss.hp = Math.max(0, boss.spydaPhaseThreeHp * (1 - boss.spydaMinisDefeated * 0.5));
+        bossBar.style.width = `${boss.hp / boss.maxHp * 100}%`;
+        createExplosion(mini.x, mini.y, '#8CEBFF', 24, 5);
+        createExplosion(mini.x, mini.y, '#4285F4', 18, 4);
+        soundSystem.bossDefeated();
+        if (boss.spydaMinisDefeated >= 2) {
+            beginSpydaDefeat();
+            return;
+        }
+        boss.spydaMiniSpawnTimer = 75;
+        announce('MINI WARDEN DESTROYED - SPYDA WEAKENS', '#8CEBFF');
+    }
+
     function update() {
-        if (!gameActive) return;
+        if (shipIntro.active) {
+            if (!gamePaused && !settingsOpen) {
+                shipIntro.frame++;
+                if (shipIntro.frame >= shipIntro.duration) finishShipIntro();
+            }
+            return;
+        }
+        if (queenFinale.phase === 'cinematic') {
+            queenFinale.frame++;
+            const captions = [
+                [0, 'THE CROWN OF THE NEBULA BREAKS...'],
+                [130, 'A THOUSAND WORLDS, FREED IN A SINGLE FLASH.'],
+                [280, 'THE STARS REMEMBER EVERY PILOT.'],
+                [420, 'AND EVEN THE LONGEST NIGHT GIVES WAY.']
+            ];
+            const caption = captions.find(([frameNumber]) => frameNumber === queenFinale.frame);
+            if (caption) {
+                const captionEl = document.getElementById('finale-caption');
+                captionEl.innerText = caption[1];
+                captionEl.style.animation = 'none';
+                captionEl.offsetWidth;
+                captionEl.style.animation = '';
+            }
+            if (queenFinale.frame >= 540) startQueenCredits();
+            return;
+        }
+        if (queenFinale.phase === 'credits') {
+            queenFinale.frame++;
+            if (queenFinale.frame >= 28 * 60) finishQueenCredits();
+            return;
+        }
+        if (!gameActive || gamePaused || settingsOpen) return;
         frame++;
-        if (!bossActive && campaignStage === 0) score++;
+        if (forcedShipTimer > 0) {
+            forcedShipTimer--;
+            if (forcedShipTimer === 0) finishShipShowcase();
+            else if (forcedShipTimer % 60 === 0) updateCampaignStatus();
+        }
         if (shake > 0) shake *= 0.9;
         if (screenFlash > 0) screenFlash *= 0.85;  // Decay screen flash
         if (modeTransition > 0) modeTransition *= 0.9;  // Smooth mode transition decay
+
+        if (bossActive && boss && boss.kind === 'warden' && boss.defeating) {
+            boss.defeatTimer--;
+            boss.x += Math.sin(frame * 0.19) * 1.2;
+            boss.y += Math.sin(frame * 0.11) * 0.7;
+            if (!boss.defeatBurstDone && boss.defeatTimer <= boss.defeatDuration / 2) {
+                boss.defeatBurstDone = true;
+                createExplosion(boss.x, boss.y, '#8CEBFF', 42, 7);
+                createExplosion(boss.x, boss.y, '#4285F4', 26, 5);
+                shake = 10;
+                screenFlash = 0.35;
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.98;
+                particle.vy *= 0.98;
+                particle.life -= particle.decay || 0.025;
+                if (particle.life <= 0) particles.splice(i, 1);
+            }
+            if (boss.defeatTimer <= 0) finishMiniboss('warden');
+            return;
+        }
+
+        if (bossActive && boss && boss.kind === 'spyda' && boss.defeating) {
+            boss.defeatTimer--;
+            const progress = 1 - boss.defeatTimer / boss.defeatDuration;
+            boss.x += Math.sin(frame * 0.24) * (1 + progress * 2);
+            boss.y += 0.35 + progress * 0.9;
+            if (!boss.defeatBurstDone && boss.defeatTimer <= boss.defeatDuration * 0.55) {
+                boss.defeatBurstDone = true;
+                createExplosion(boss.x, boss.y, '#D9A7FF', 34, 6);
+                createExplosion(boss.x, boss.y + 26, '#7DE8D2', 28, 5);
+                createExplosion(boss.x - 45, boss.y + 8, '#B77BFF', 18, 4);
+                createExplosion(boss.x + 45, boss.y + 8, '#B77BFF', 18, 4);
+                shake = 7;
+                screenFlash = 0.2;
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.98;
+                particle.vy *= 0.98;
+                particle.life -= particle.decay || 0.025;
+                if (particle.life <= 0) particles.splice(i, 1);
+            }
+            if (boss.defeatTimer <= 0) finishMiniboss('spyda');
+            return;
+        }
+
+        if (!bossActive && campaignStage === 0) score++;
 
         // Movement by selected control mode
         const keyboardX = (keys['ArrowRight'] || keys['d'] ? 1 : 0) - (keys['ArrowLeft'] || keys['a'] ? 1 : 0);
         const keyboardY = (keys['ArrowDown'] || keys['s'] ? 1 : 0) - (keys['ArrowUp'] || keys['w'] ? 1 : 0);
 
-        const webSlowFactor = broodmotherWebSlowFactor();
+        const webSlowFactor = spydaWebSlowFactor();
         if (controlMode === 'mouse') {
             player.x += (player.targetX - player.x) * 0.12 * currentMode.speed * webSlowFactor;
             player.y += (player.targetY - player.y) * 0.12 * currentMode.speed * webSlowFactor;
@@ -773,8 +1716,10 @@
             ammo--;
             if (ammo <= 0) {
                 isReloading = true;
-                currentMode = MODES.FLASH;
-                updateShipIndicator();
+                if (forcedShipTimer <= 0) {
+                    currentMode = MODES.FLASH;
+                    updateShipIndicator();
+                }
                 announce("RELOADING...", "#666");
             }
         }
@@ -783,7 +1728,7 @@
         if (ultraEnergy > 100) ultraEnergy = 100;
         if (ultraEnergy <= 0) {
             ultraEnergy = 0;
-            if (currentMode.id === 'ULTRA') {
+            if (currentMode.id === 'ULTRA' && forcedShipTimer <= 0) {
                 currentMode = MODES.FLASH;
                 updateShipIndicator();
             }
@@ -834,52 +1779,58 @@
             b.y += b.vy;
             if (b.y < -20) { bullets.splice(i, 1); continue; }
             let hit = false;
-            if (bossActive && boss.kind === 'broodmother' && b.weapon === 'PRO') {
-                let hitBroodmother = false;
-                for (let podIndex = boss.broodPods.length - 1; podIndex >= 0; podIndex--) {
-                    const pod = boss.broodPods[podIndex];
+            if (bossActive && boss.kind === 'spyda' && b.weapon === 'PRO') {
+                let hitSpyda = false;
+                if (boss.phase === 3) {
+                    const mini = boss.spydaMiniWarden;
+                    if (mini && Math.hypot(b.x - mini.x, b.y - mini.y) < 48) {
+                        mini.hp--;
+                        createExplosion(b.x, b.y, '#8CEBFF', 5, 2);
+                        soundSystem.impact();
+                        if (mini.hp <= 0) {
+                            defeatSpydaMiniWarden();
+                            if (boss.defeating) return;
+                        }
+                        bullets.splice(i, 1);
+                    }
+                    continue;
+                }
+                for (let podIndex = boss.spydaPods.length - 1; podIndex >= 0; podIndex--) {
+                    const pod = boss.spydaPods[podIndex];
                     if (Math.hypot(b.x - pod.x, b.y - pod.y) >= 24) continue;
                     pod.hp--;
                     createExplosion(b.x, b.y, '#D9A7FF', 5, 2);
                     soundSystem.impact();
                     if (pod.hp <= 0) {
-                        boss.broodPods.splice(podIndex, 1);
+                        boss.spydaPods.splice(podIndex, 1);
                         boss.isVulnerable = true;
                         boss.vulnerableTimer = 150;
-                        boss.broodComboState = 'exposed';
-                        boss.broodSporeMarks = [];
-                        boss.broodLaser = null;
+                        boss.spydaComboState = 'exposed';
+                        boss.spydaSporeMarks = [];
+                        boss.spydaLaser = null;
                         boss.waveQueued = false;
                         announce('NEST POD DESTROYED - STRIKE!', '#E7C8FF');
                         createExplosion(pod.x, pod.y, '#D9A7FF', 26, 5);
                         soundSystem.vulnerability();
                     }
-                    hitBroodmother = true;
+                    hitSpyda = true;
                     break;
                 }
-                if (!hitBroodmother) {
-                    for (let hunterIndex = boss.broodHunters.length - 1; hunterIndex >= 0; hunterIndex--) {
-                        const hunter = boss.broodHunters[hunterIndex];
-                        if (Math.hypot(b.x - hunter.x, b.y - hunter.y) >= hunter.radius + 6) continue;
-                        boss.broodHunters.splice(hunterIndex, 1);
-                        createExplosion(b.x, b.y, '#D9A7FF', 7, 2);
-                        soundSystem.impact();
-                        hitBroodmother = true;
-                        break;
-                    }
-                }
-                if (!hitBroodmother && boss.isVulnerable && Math.hypot(b.x - boss.x, b.y - (boss.y + 8)) < 76) {
+                if (!hitSpyda && boss.isVulnerable && Math.hypot(b.x - boss.x, b.y - (boss.y + 8)) < 76) {
                     boss.hp -= 30;
                     createExplosion(b.x, b.y, '#D9A7FF', 5, 2);
                     soundSystem.impact();
-                    hitBroodmother = true;
-                    if (boss.hp <= 0) finishMiniboss('broodmother');
+                    hitSpyda = true;
+                    if (boss.hp <= 0) {
+                        beginSpydaDefeat();
+                        return;
+                    }
                 }
-                if (!hitBroodmother && Math.hypot(b.x - boss.x, b.y - (boss.y + 8)) < 76) {
+                if (!hitSpyda && Math.hypot(b.x - boss.x, b.y - (boss.y + 8)) < 76) {
                     createExplosion(b.x, b.y, '#A98CC5', 3, 1);
-                    hitBroodmother = true;
+                    hitSpyda = true;
                 }
-                if (hitBroodmother) {
+                if (hitSpyda) {
                     bullets.splice(i, 1);
                     continue;
                 }
@@ -901,6 +1852,7 @@
                     let color = en.type === 'orange' ? '#FF8C00' : (en.type === 'yellow' ? '#FBBC05' : (en.type === 'blue' ? '#4285F4' : (en.type === 'green' ? '#34A853' : '#FF4444')));
                     createExplosion(en.x, en.y, color, 20);  // More particles
                     enemies.splice(j, 1);
+                    soundSystem.enemyDestroyed(en.type);
                     soundSystem.impact();
                     hit = true; 
                     score += 100;
@@ -979,7 +1931,7 @@
                     en.x += Math.sin(frame * 0.02) * 1.5;
                     if (en.timer % 120 === 0) {
                         enemyPulses.push({ x: en.x, y: en.y, radius: 10, maxRadius: 200, speed: 4, color: '#4285F4' });
-                        soundSystem.enemyFire();
+                        soundSystem.enemyFire('pulse');
                     }
                 } else if (en.state === 'FLEE') {
                     en.x += en.vx; en.y += en.vy;
@@ -995,7 +1947,7 @@
                     if (en.timer % 60 === 0) {
                         const angle = Math.atan2(player.y - en.y, player.x - en.x);
                         enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6, radius: 4, color: '#FF334F' });
-                        soundSystem.enemyFire();
+                        soundSystem.enemyFire('shot');
                     }
                     if (en.lifetime <= 0) sendEnemyOffscreen(en);
                 } else if (en.state === 'FLEE') {
@@ -1014,7 +1966,7 @@
             if (Math.hypot(en.x - player.x, en.y - player.y) < currentMode.radius + 15) {
                 if (currentMode.shield) {
                     enemies.splice(i, 1); createExplosion(en.x, en.y, '#FFF', 25);
-                    ultraEnergy -= 20; soundSystem.shieldHit(); shake = 5; screenFlash = 0.3; score += 100;
+                    ultraEnergy -= 20; soundSystem.shieldHit(); soundSystem.enemyDestroyed(en.type); shake = 5; screenFlash = 0.3; score += 100;
                 } else endGame();
             }
         }
@@ -1074,7 +2026,7 @@
                     }
                     boss.attackCount++;
                     boss.attackQueued = false;
-                    soundSystem.bossFire();
+                    soundSystem.bossFire(boss.kind);
                 }
             } else if (boss.attackTimer % (boss.timeRemaining <= 1800 ? 18 : 54) === 0) {
                 boss.attackQueued = true;
@@ -1082,126 +2034,161 @@
             }
             bossPhaseEl.innerText = `SURVIVE - ${Math.ceil(boss.timeRemaining / 60)} SECONDS`;
             bossBar.style.width = `${boss.timeRemaining / 36}%`;
-            if (boss.timeRemaining <= 0) finishMiniboss('warden');
-        } else if (bossActive && boss.kind === 'broodmother') {
+            if (boss.timeRemaining <= 0) beginWardenDefeat();
+        } else if (bossActive && boss.kind === 'spyda') {
             boss.attackTimer++;
             boss.shieldAngle += 0.035;
             boss.x += (boss.targetX - boss.x) * 0.025;
             boss.y += (150 - boss.y) * 0.025;
             boss.targetX = canvas.width / 2 + Math.sin(boss.attackTimer * 0.006) * Math.min(180, canvas.width * 0.28);
 
-            const nextBroodPhase = boss.hp <= boss.maxHp * 0.25 ? 3 : boss.hp <= boss.maxHp * 0.6 ? 2 : 1;
-            if (nextBroodPhase !== boss.phase) {
-                boss.phase = nextBroodPhase;
-                const phaseNames = ['The Nest Stirs', 'Hunters Close In', 'Last Hatch'];
+            const nextSpydaPhase = boss.hp <= boss.maxHp * 0.25 ? 3 : boss.hp <= boss.maxHp * 0.6 ? 2 : 1;
+            if (nextSpydaPhase !== boss.phase) {
+                boss.phase = nextSpydaPhase;
+                soundSystem.bossPhase();
+                const phaseNames = ['The Nest Stirs', 'The Brood Awakens', 'Warden Within'];
                 bossPhaseEl.innerText = `Phase ${boss.phase} - ${phaseNames[boss.phase - 1]}`;
-                announce(`BROODMOTHER: ${phaseNames[boss.phase - 1].toUpperCase()}`, '#C18CFF');
-                boss.broodComboState = 'idle';
-                boss.broodComboTimer = 42;
-                boss.broodSporeMarks = [];
-                boss.broodLaser = null;
+                announce(`SPYDA: ${phaseNames[boss.phase - 1].toUpperCase()}`, '#C18CFF');
+                boss.spydaComboState = 'idle';
+                boss.spydaComboTimer = 42;
+                boss.spydaSporeMarks = [];
+                boss.spydaLaser = null;
                 boss.waveQueued = false;
-                spawnBroodmotherPods(boss.phase);
+                if (boss.phase === 3) {
+                    boss.spydaPhaseThreeHp = boss.hp;
+                    boss.spydaMinisDefeated = 0;
+                    boss.spydaMiniSpawnTimer = 75;
+                    boss.spydaMiniWarden = null;
+                    boss.spydaPods = [];
+                    boss.spydaWebs = [];
+                    boss.isVulnerable = false;
+                    enemies = [];
+                    enemyBullets = [];
+                    enemyPulses = [];
+                    bossBullets = [];
+                    currentMode = MODES.PRO;
+                    ammo = maxAmmo;
+                    isReloading = false;
+                    updateShipIndicator();
+                } else {
+                    spawnSpydaPods(boss.phase);
+                }
             }
 
-            if (boss.y > 0 && !boss.broodPodsInitialized) {
-                boss.broodPodsInitialized = true;
-                spawnBroodmotherPods(2);
+            if (boss.phase < 3 && boss.y > 0 && !boss.spydaPodsInitialized) {
+                boss.spydaPodsInitialized = true;
+                spawnSpydaPods(2);
             }
-            boss.broodPodSpawnTimer--;
-            if (boss.broodPodSpawnTimer <= 0) {
-                spawnBroodmotherPods(1);
-                boss.broodPodSpawnTimer = 360 - boss.phase * 45;
+            if (boss.phase < 3) {
+                boss.spydaPodSpawnTimer--;
+                if (boss.spydaPodSpawnTimer <= 0) {
+                    spawnSpydaPods(1);
+                    boss.spydaPodSpawnTimer = 360 - boss.phase * 45;
+                }
             }
-            if (boss.broodHazardCooldown > 0) boss.broodHazardCooldown--;
+            if (boss.spydaHazardCooldown > 0) boss.spydaHazardCooldown--;
 
-            for (let i = boss.broodPods.length - 1; i >= 0; i--) {
-                const pod = boss.broodPods[i];
+            for (let i = boss.spydaPods.length - 1; i >= 0; i--) {
+                const pod = boss.spydaPods[i];
                 pod.pulse += 0.08;
                 pod.hatchTimer--;
                 if (pod.hatchTimer <= 0) {
-                    if (boss.broodHunters.length < 2 + boss.phase * 2) {
-                        boss.broodHunters.push({
-                            x: pod.x, y: pod.y, radius: 12,
-                            speed: 1.25 + boss.phase * 0.22,
-                            timer: 420 - boss.phase * 30
-                        });
-                        createExplosion(pod.x, pod.y, '#C18CFF', 10, 2);
-                        soundSystem.bossFire();
-                    }
+                    const enemyTypes = ['orange', 'yellow', 'red', 'blue', 'green'];
+                    const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+                    enemies.push(createEnemy(type, pod.x, pod.y));
+                    createExplosion(pod.x, pod.y, '#C18CFF', 10, 2);
+                    soundSystem.bossFire(boss.kind);
                     pod.hatchTimer = pod.hatchInterval;
                 }
             }
-            for (let i = boss.broodHunters.length - 1; i >= 0; i--) {
-                const hunter = boss.broodHunters[i];
-                const dx = player.x - hunter.x;
-                const dy = player.y - hunter.y;
-                const distance = Math.max(1, Math.hypot(dx, dy));
-                hunter.x += dx / distance * hunter.speed;
-                hunter.y += dy / distance * hunter.speed;
-                hunter.timer--;
-                if (hunter.timer <= 0) {
-                    boss.broodHunters.splice(i, 1);
-                    continue;
+
+            if (boss.phase === 3) {
+                boss.isVulnerable = false;
+                if (!boss.spydaMiniWarden && boss.spydaMinisDefeated < 2) {
+                    boss.spydaMiniSpawnTimer--;
+                    if (boss.spydaMiniSpawnTimer <= 0) spawnSpydaMiniWarden();
                 }
-                if (Math.hypot(player.x - hunter.x, player.y - hunter.y) < currentMode.radius + hunter.radius) {
-                    hitByBroodmotherHazard();
-                    boss.broodHunters.splice(i, 1);
+                const mini = boss.spydaMiniWarden;
+                if (mini) {
+                    mini.spawnProgress = Math.min(1, mini.spawnProgress + 0.025);
+                    mini.x += (boss.x + Math.sin(frame * 0.016) * 24 - mini.x) * 0.045;
+                    mini.y += (boss.y + 80 + mini.spawnProgress * 48 - mini.y) * 0.08;
+                    mini.attackTimer--;
+                    if (mini.attackTimer <= 0) {
+                        const aim = Math.atan2(player.y - mini.y, player.x - mini.x);
+                        const speed = mini.round === 1 ? 1.8 : 2.1;
+                        const bulletCount = mini.round === 1 ? 5 : 10;
+                        const spreadStep = mini.round === 1 ? 0.12 : 0.08;
+                        const offsets = Array.from(
+                            { length: bulletCount },
+                            (_, index) => (index - (bulletCount - 1) / 2) * spreadStep
+                        );
+                        for (const offset of offsets) {
+                            bossBullets.push({
+                                x: mini.x, y: mini.y + 8,
+                                vx: Math.cos(aim + offset) * speed,
+                                vy: Math.sin(aim + offset) * speed,
+                                radius: 3, color: '#79C8FF', miniWarden: true
+                            });
+                        }
+                        mini.attackTimer = mini.round === 1 ? 11 : 16;
+                        soundSystem.bossFire('warden');
+                    }
                 }
             }
 
-            for (let i = boss.broodWebs.length - 1; i >= 0; i--) {
-                const web = boss.broodWebs[i];
+            for (let i = boss.spydaWebs.length - 1; i >= 0; i--) {
+                const web = boss.spydaWebs[i];
                 web.radius = Math.min(web.maxRadius, web.radius + 0.09 + boss.phase * 0.025);
                 web.timer--;
-                if (web.timer <= 0) boss.broodWebs.splice(i, 1);
+                if (web.timer <= 0) boss.spydaWebs.splice(i, 1);
             }
-            for (let i = boss.broodSporeMarks.length - 1; i >= 0; i--) {
-                const mark = boss.broodSporeMarks[i];
+            for (let i = boss.spydaSporeMarks.length - 1; i >= 0; i--) {
+                const mark = boss.spydaSporeMarks[i];
                 mark.warning--;
                 if (mark.warning <= 0) {
-                    boss.broodWebs.push({ x: mark.x, y: mark.y, radius: 34, maxRadius: 84 + boss.phase * 10, timer: 900 });
+                    boss.spydaWebs.push({ x: mark.x, y: mark.y, radius: 34, maxRadius: 84 + boss.phase * 10, timer: 900 });
                     createExplosion(mark.x, mark.y, '#C18CFF', 16, 3);
                     if (Math.hypot(player.x - mark.x, player.y - mark.y) < 58 + currentMode.radius) {
-                        hitByBroodmotherHazard();
+                        hitBySpydaHazard();
                     }
-                    boss.broodSporeMarks.splice(i, 1);
+                    boss.spydaSporeMarks.splice(i, 1);
                 }
             }
 
-            if (!boss.isVulnerable && boss.y > 0) {
-                if (boss.broodComboState === 'idle') {
-                    boss.broodComboTimer--;
-                    if (boss.broodComboTimer <= 0) {
+            if (boss.phase < 3 && !boss.isVulnerable && boss.y > 0) {
+                if (boss.spydaComboState === 'idle') {
+                    boss.spydaComboTimer--;
+                    if (boss.spydaComboTimer <= 0) {
                         const markCount = boss.phase;
                         const warning = 52 - boss.phase * 7;
                         for (let i = 0; i < markCount; i++) {
                             const offset = (i - (markCount - 1) / 2) * 72;
                             const x = Math.max(36, Math.min(canvas.width - 36, player.x + offset));
                             const y = Math.max(36, Math.min(canvas.height - 36, player.y + (i % 2 ? -38 : 24)));
-                            boss.broodSporeMarks.push({ x, y, warning });
+                            boss.spydaSporeMarks.push({ x, y, warning });
                         }
-                        boss.broodComboState = 'spores';
-                        boss.broodComboTimer = warning;
+                        boss.spydaComboState = 'spores';
+                        boss.spydaComboTimer = warning;
                     }
-                } else if (boss.broodComboState === 'spores') {
-                    boss.broodComboTimer--;
-                    if (boss.broodComboTimer <= 0) {
+                } else if (boss.spydaComboState === 'spores') {
+                    boss.spydaComboTimer--;
+                    if (boss.spydaComboTimer <= 0) {
                         const margin = Math.min(60, canvas.height * 0.12);
-                        boss.broodLaser = {
+                        boss.spydaLaser = {
                             warning: 44 - boss.phase * 5,
                             active: false,
                             progress: 0,
                             y: Math.max(margin, Math.min(canvas.height - margin, player.y)),
                             direction: boss.attackCount % 2 === 0 ? 1 : -1
                         };
-                        boss.broodComboState = 'laser';
+                        boss.spydaComboState = 'laser';
                     }
                 }
             }
 
-            if (!boss.isVulnerable && boss.broodComboState === 'laser' && boss.broodLaser) {
-                const laser = boss.broodLaser;
+            if (boss.phase < 3 && !boss.isVulnerable && boss.spydaComboState === 'laser' && boss.spydaLaser) {
+                const laser = boss.spydaLaser;
                 if (laser.warning > 0) {
                     laser.warning--;
                     if (laser.warning === 0) {
@@ -1228,17 +2215,17 @@
                         }
                     }
                     if (laser.progress >= 1) {
-                        boss.broodLaser = null;
+                        boss.spydaLaser = null;
                         const laneCount = 6 + boss.phase * 2;
                         boss.waveGap = Math.max(0, Math.min(laneCount - 1, Math.floor(player.x / canvas.width * laneCount)));
                         boss.waveLaneCount = laneCount;
                         boss.waveWarning = 44 - boss.phase * 5;
                         boss.waveQueued = true;
-                        boss.broodComboState = 'lanes';
+                        boss.spydaComboState = 'lanes';
                     }
                 }
             }
-            if (!boss.isVulnerable && boss.broodComboState === 'lanes' && boss.waveQueued) {
+            if (boss.phase < 3 && !boss.isVulnerable && boss.spydaComboState === 'lanes' && boss.waveQueued) {
                 boss.waveWarning--;
                 if (boss.waveWarning <= 0) {
                     for (let lane = 0; lane < boss.waveLaneCount; lane++) {
@@ -1251,33 +2238,37 @@
                     }
                     boss.attackCount++;
                     boss.waveQueued = false;
-                    boss.broodComboState = 'recover';
-                    boss.broodComboTimer = 68 - boss.phase * 8;
-                    soundSystem.bossFire();
+                    boss.spydaComboState = 'recover';
+                    boss.spydaComboTimer = 68 - boss.phase * 8;
+                    soundSystem.bossFire(boss.kind);
                 }
             }
-            if (!boss.isVulnerable && boss.broodComboState === 'recover') {
-                boss.broodComboTimer--;
-                if (boss.broodComboTimer <= 0) {
+            if (boss.phase < 3 && !boss.isVulnerable && boss.spydaComboState === 'recover') {
+                boss.spydaComboTimer--;
+                if (boss.spydaComboTimer <= 0) {
                     boss.isVulnerable = true;
                     boss.vulnerableTimer = 126 - boss.phase * 12;
-                    announce('BROODMOTHER EXPOSED - STRIKE!', '#E7C8FF');
+                    announce('SPYDA EXPOSED - STRIKE!', '#E7C8FF');
                     soundSystem.vulnerability();
                 }
-            } else if (boss.isVulnerable) {
+            } else if (boss.phase < 3 && boss.isVulnerable) {
                 boss.vulnerableTimer--;
                 if (boss.vulnerableTimer <= 0) {
                     boss.isVulnerable = false;
-                    boss.broodComboState = 'idle';
-                    boss.broodComboTimer = 110 - boss.phase * 16;
+                    boss.spydaComboState = 'idle';
+                    boss.spydaComboTimer = 110 - boss.phase * 16;
                 }
             }
             bossBar.style.width = `${boss.hp / boss.maxHp * 100}%`;
-            if (boss.hp <= 0) finishMiniboss('broodmother');
+            if (boss.hp <= 0) {
+                beginSpydaDefeat();
+                return;
+            }
         } else if (bossActive && boss.kind === 'queen') {
             const nextPhase = boss.hp <= boss.maxHp * 0.25 ? 4 : boss.hp <= boss.maxHp * 0.5 ? 3 : boss.hp <= boss.maxHp * 0.75 ? 2 : 1;
             if (nextPhase !== boss.phase) {
                 boss.phase = nextPhase;
+                soundSystem.bossPhase();
                 const phaseNames = ['Blood Awakening', 'Crimson Hunt', 'Throne Fracture', 'Final Eclipse'];
                 bossPhaseEl.innerText = `Phase ${boss.phase} - ${phaseNames[boss.phase - 1]}`;
                 announce(`QUEEN PHASE ${boss.phase}`, '#D96570');
@@ -1414,7 +2405,7 @@
                         });
                     }
                     boss.queenCloneTimer = 210 - boss.phase * 22;
-                    soundSystem.bossFire();
+                    soundSystem.bossFire(boss.kind);
                 }
             } else if (boss.y > 0) {
                 boss.queenCloneTimer--;
@@ -1950,7 +2941,7 @@
     function drawQueenArena() {
         if (!bossActive) return;
         const color = boss.kind === 'warden' ? '#4285F4'
-            : boss.kind === 'broodmother' ? '#9B72CB'
+            : boss.kind === 'spyda' ? '#9B72CB'
                 : ['#D96570', '#9B72CB', '#FF8A4C', '#EE84FF'][boss.phase - 1];
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
@@ -1958,7 +2949,7 @@
         const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.12, centerX, centerY, radius);
         gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
         const edgeColor = boss.kind === 'warden' ? 'rgba(30, 80, 150, 0.14)'
-            : boss.kind === 'broodmother' ? 'rgba(98, 50, 145, 0.18)'
+            : boss.kind === 'spyda' ? 'rgba(98, 50, 145, 0.18)'
                 : boss.phase === 1 ? 'rgba(160, 36, 74, 0.14)' : boss.phase === 2 ? 'rgba(98, 50, 145, 0.18)' : boss.phase === 3 ? 'rgba(184, 70, 40, 0.18)' : 'rgba(126, 38, 154, 0.2)';
         gradient.addColorStop(1, edgeColor);
         ctx.fillStyle = gradient;
@@ -1968,7 +2959,7 @@
         ctx.globalAlpha = reducedEffects ? 0.08 : 0.16;
         ctx.strokeStyle = color;
         ctx.lineWidth = 1;
-        ctx.setLineDash(boss.kind === 'broodmother' || boss.phase === 2 ? [3, 12] : [12, 18]);
+        ctx.setLineDash(boss.kind === 'spyda' || boss.phase === 2 ? [3, 12] : [12, 18]);
         for (let i = 0; i < 3; i++) {
             const ringRadius = Math.min(canvas.width, canvas.height) * (0.24 + i * 0.1);
             ctx.beginPath();
@@ -1992,9 +2983,9 @@
         }
     }
 
-    function drawBroodmotherNest() {
-        if (!bossActive || boss.kind !== 'broodmother') return;
-        boss.broodWebs.forEach(web => {
+    function drawSpydaNest() {
+        if (!bossActive || boss.kind !== 'spyda') return;
+        boss.spydaWebs.forEach(web => {
             const fade = Math.min(1, web.timer / 80);
             ctx.save();
             ctx.globalAlpha = 0.1 + fade * 0.2;
@@ -2011,7 +3002,7 @@
             ctx.restore();
         });
 
-        boss.broodPods.forEach(pod => {
+        boss.spydaPods.forEach(pod => {
             const pulse = 1 + Math.sin(pod.pulse) * 0.08;
             ctx.save();
             ctx.translate(pod.x, pod.y);
@@ -2054,31 +3045,11 @@
             ctx.restore();
         });
 
-        boss.broodHunters.forEach(hunter => {
-            const angle = Math.atan2(player.y - hunter.y, player.x - hunter.x);
-            ctx.save();
-            ctx.translate(hunter.x, hunter.y);
-            ctx.rotate(angle);
-            ctx.shadowBlur = reducedEffects ? 0 : 10;
-            ctx.shadowColor = '#D8A7FF';
-            ctx.fillStyle = '#8B61AA';
-            ctx.strokeStyle = '#E7C8FF';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(14, 0);
-            ctx.lineTo(-9, -9);
-            ctx.lineTo(-5, 0);
-            ctx.lineTo(-9, 9);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
-        });
     }
 
     function drawQueenTelegraph() {
         if (!bossActive || boss.y <= 0) return;
-        if (boss.kind === 'broodmother') {
+        if (boss.kind === 'spyda') {
             if (boss.waveQueued && boss.waveWarning > 0) {
                 const laneCount = boss.waveLaneCount || 6 + boss.phase * 2;
                 ctx.save();
@@ -2095,7 +3066,7 @@
                 }
                 ctx.restore();
             }
-            boss.broodSporeMarks.forEach(mark => {
+            boss.spydaSporeMarks.forEach(mark => {
                 const pulse = 0.45 + Math.sin(frame * 0.35) * 0.2;
                 ctx.save();
                 ctx.globalAlpha = pulse;
@@ -2112,8 +3083,8 @@
                 ctx.stroke();
                 ctx.restore();
             });
-            if (boss.broodLaser && boss.broodLaser.warning > 0) {
-                const laser = boss.broodLaser;
+            if (boss.spydaLaser && boss.spydaLaser.warning > 0) {
+                const laser = boss.spydaLaser;
                 const warningPulse = 0.5 + Math.sin(frame * 0.5) * 0.18;
                 const originX = laser.direction === 1 ? 8 : canvas.width - 8;
                 ctx.save();
@@ -2237,10 +3208,10 @@
         }
     }
 
-    function drawBroodmotherLaser() {
-        if (!bossActive || boss.kind !== 'broodmother' || !boss.broodLaser?.active) return;
+    function drawSpydaLaser() {
+        if (!bossActive || boss.kind !== 'spyda' || !boss.spydaLaser?.active) return;
 
-        const laser = boss.broodLaser;
+        const laser = boss.spydaLaser;
         const frontX = laser.direction === 1
             ? canvas.width * laser.progress
             : canvas.width * (1 - laser.progress);
@@ -2275,40 +3246,53 @@
         ctx.lineJoin = 'round';
 
         if (boss.kind === 'warden') {
-            const pulse = 1 + Math.sin(frame * 0.07) * 0.04;
-            ctx.scale(pulse, pulse);
-            ctx.shadowBlur = reducedEffects ? 0 : 18;
-            ctx.shadowColor = '#4285F4';
-            ctx.fillStyle = '#18243F';
-            ctx.beginPath();
-            ctx.moveTo(-30, -24); ctx.lineTo(-112, -64); ctx.lineTo(-84, -15);
-            ctx.lineTo(-122, 9); ctx.lineTo(-66, 16); ctx.lineTo(-44, 50);
-            ctx.lineTo(0, 39); ctx.lineTo(44, 50); ctx.lineTo(66, 16);
-            ctx.lineTo(122, 9); ctx.lineTo(84, -15); ctx.lineTo(112, -64);
-            ctx.lineTo(30, -24); ctx.lineTo(0, -66); ctx.closePath();
-            ctx.fill();
-            ctx.fillStyle = '#315A8F';
-            ctx.beginPath();
-            ctx.ellipse(0, -2, 57, 48, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#102033';
-            ctx.beginPath();
-            ctx.ellipse(0, -18, 35, 22, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#8CEBFF';
-            ctx.shadowBlur = reducedEffects ? 0 : 18;
-            ctx.shadowColor = '#67DFFF';
-            ctx.beginPath();
-            ctx.ellipse(0, -17, 23, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#8AB5E8';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(-35, -28); ctx.lineTo(-58, -56);
-            ctx.moveTo(35, -28); ctx.lineTo(58, -56);
-            ctx.stroke();
-        } else if (boss.kind === 'broodmother') {
-            const wingBeat = Math.sin(frame * 0.08) * 8;
+            if (boss.defeating) {
+                const progress = 1 - boss.defeatTimer / boss.defeatDuration;
+                ctx.save();
+                ctx.globalAlpha = 0.7 * (1 - progress);
+                ctx.strokeStyle = progress < 0.5 ? '#8CEBFF' : '#FFFFFF';
+                ctx.lineWidth = 4 - progress * 2;
+                ctx.shadowBlur = reducedEffects ? 0 : 22;
+                ctx.shadowColor = '#67DFFF';
+                ctx.beginPath();
+                ctx.arc(0, 0, 64 + progress * 150, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+                ctx.rotate(progress * 2.8);
+                const collapseScale = Math.max(0.06, 1 - progress * 0.92);
+                ctx.scale(collapseScale, collapseScale);
+                ctx.globalAlpha = Math.max(0.08, 1 - progress * 0.95);
+            } else {
+                const pulse = 1 + Math.sin(frame * 0.07) * 0.04;
+                ctx.scale(pulse, pulse);
+            }
+            drawWardenModel();
+        } else if (boss.kind === 'spyda') {
+            const defeatProgress = boss.defeating ? 1 - boss.defeatTimer / boss.defeatDuration : 0;
+            if (boss.defeating) {
+                const cocoonPulse = Math.sin(frame * 0.16) * 5;
+                ctx.save();
+                ctx.globalAlpha = (reducedEffects ? 0.52 : 0.38 + defeatProgress * 0.42) * Math.min(1, defeatProgress * 4);
+                ctx.strokeStyle = '#D9A7FF';
+                ctx.lineWidth = 2 + defeatProgress * 2;
+                ctx.shadowBlur = reducedEffects ? 0 : 18;
+                ctx.shadowColor = '#B77BFF';
+                ctx.beginPath();
+                ctx.ellipse(0, 2, 82 + defeatProgress * 24 + cocoonPulse, 108 + defeatProgress * 36 + cocoonPulse, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                for (let strand = 0; strand < 8; strand++) {
+                    const angle = Math.PI * 2 * strand / 8 + frame * 0.008;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(angle) * 105, 2 + Math.sin(angle) * 132);
+                    ctx.quadraticCurveTo(Math.cos(angle + 0.45) * 20, Math.sin(angle + 0.45) * 36, Math.cos(angle + Math.PI) * 105, 2 + Math.sin(angle + Math.PI) * 132);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                ctx.rotate(Math.sin(frame * 0.22) * (1 - defeatProgress) * 0.12 + defeatProgress * 0.35);
+                ctx.scale(Math.max(0.08, 1 - defeatProgress * 0.78), Math.max(0.08, 1 - defeatProgress * 0.9));
+                ctx.globalAlpha = Math.max(0.06, 1 - defeatProgress * 0.94);
+            }
+            const wingBeat = Math.sin(frame * (boss.defeating ? 0.22 : 0.08)) * (boss.defeating ? 8 * (1 - defeatProgress) : 8);
             ctx.shadowBlur = reducedEffects ? 0 : 16;
             ctx.shadowColor = '#B77BFF';
             ctx.fillStyle = '#39244C';
@@ -2354,6 +3338,99 @@
             ctx.fill();
         }
 
+        ctx.restore();
+    }
+
+    function drawWardenModel() {
+        ctx.shadowBlur = reducedEffects ? 0 : 18;
+        ctx.shadowColor = '#4285F4';
+        ctx.fillStyle = '#18243F';
+        ctx.beginPath();
+        ctx.moveTo(-30, -24); ctx.lineTo(-112, -64); ctx.lineTo(-84, -15);
+        ctx.lineTo(-122, 9); ctx.lineTo(-66, 16); ctx.lineTo(-44, 50);
+        ctx.lineTo(0, 39); ctx.lineTo(44, 50); ctx.lineTo(66, 16);
+        ctx.lineTo(122, 9); ctx.lineTo(84, -15); ctx.lineTo(112, -64);
+        ctx.lineTo(30, -24); ctx.lineTo(0, -66); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#315A8F';
+        ctx.beginPath();
+        ctx.ellipse(0, -2, 57, 48, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#102033';
+        ctx.beginPath();
+        ctx.ellipse(0, -18, 35, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#8CEBFF';
+        ctx.shadowBlur = reducedEffects ? 0 : 18;
+        ctx.shadowColor = '#67DFFF';
+        ctx.beginPath();
+        ctx.ellipse(0, -17, 23, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#8AB5E8';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-35, -28); ctx.lineTo(-58, -56);
+        ctx.moveTo(35, -28); ctx.lineTo(58, -56);
+        ctx.stroke();
+    }
+
+    function drawSpydaMiniWarden() {
+        const mini = boss?.spydaMiniWarden;
+        if (!mini) return;
+        const x = mini.x;
+        const y = mini.y;
+        const tetherPulse = 0.72 + Math.sin(frame * 0.16) * 0.18;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, mini.spawnProgress * 2);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        for (const side of [-1, 1]) {
+            for (let leg = 0; leg < 2; leg++) {
+                ctx.strokeStyle = '#39244C';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(boss.x + side * (34 + leg * 5), boss.y + 24 + leg * 15);
+                ctx.quadraticCurveTo(
+                    x + side * 38,
+                    y - 25,
+                    x + side * (27 + leg * 8),
+                    y - 5
+                );
+                ctx.stroke();
+                ctx.strokeStyle = '#B77BFF';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        ctx.strokeStyle = '#39244C';
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.moveTo(boss.x, boss.y + 68);
+        ctx.bezierCurveTo(boss.x - 12, boss.y + 96, x + 12, y - 58, x, y - 28);
+        ctx.stroke();
+        ctx.globalAlpha *= tetherPulse;
+        ctx.strokeStyle = '#8CEBFF';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, mini.spawnProgress * 2);
+        ctx.translate(x, y);
+        ctx.scale(mini.round === 1 ? 0.25 : 0.28, mini.round === 1 ? 0.25 : 0.28);
+        drawWardenModel();
+        ctx.restore();
+
+        const healthWidth = 46;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, mini.spawnProgress * 2);
+        ctx.fillStyle = 'rgba(2, 8, 18, 0.85)';
+        ctx.fillRect(x - healthWidth / 2, y - 30, healthWidth, 6);
+        ctx.fillStyle = '#8CEBFF';
+        ctx.fillRect(x - healthWidth / 2, y - 30, healthWidth * mini.hp / mini.maxHp, 6);
+        ctx.strokeStyle = '#D8F7FF';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - healthWidth / 2, y - 30, healthWidth, 6);
         ctx.restore();
     }
 
@@ -2537,7 +3614,7 @@
         if (bossActive) {
             drawQueenArena();
             drawBloodQueenArena();
-            drawBroodmotherNest();
+            drawSpydaNest();
         }
         else drawSectorAtmosphere();
         
@@ -2613,12 +3690,14 @@
 
         if (bossActive) {
             drawQueenTelegraph();
-            drawBroodmotherLaser();
+            drawSpydaLaser();
             if (boss.kind === 'queen') {
                 drawAlienQueen();
                 drawBloodQueenClone();
+            } else {
+                drawMiniboss();
+                if (boss.kind === 'spyda') drawSpydaMiniWarden();
             }
-            else drawMiniboss();
         }
 
         enemyBullets.forEach(eb => {
@@ -2637,19 +3716,32 @@
             ctx.restore();
         });
         bossBullets.forEach(bb => {
-            const angle = Math.atan2(bb.vy, bb.vx);
-            const bulletColor = bb.color || '#FF334F';
             ctx.save();
-            ctx.translate(bb.x, bb.y);
-            ctx.rotate(angle);
-            ctx.shadowBlur = reducedEffects ? 0 : 14;
-            ctx.shadowColor = bulletColor;
-            ctx.fillStyle = bulletColor;
-            ctx.beginPath();
-            ctx.roundRect(-11, -2.5, 22, 5, 2.5);
-            ctx.fill();
-            ctx.fillStyle = '#FFF1F4';
-            ctx.fillRect(-6, -1, 12, 2);
+            if (bb.miniWarden) {
+                ctx.shadowBlur = reducedEffects ? 0 : 8;
+                ctx.shadowColor = bb.color;
+                ctx.fillStyle = bb.color;
+                ctx.beginPath();
+                ctx.arc(bb.x, bb.y, bb.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#E7FCFF';
+                ctx.beginPath();
+                ctx.arc(bb.x - 0.8, bb.y - 0.8, 1, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                const angle = Math.atan2(bb.vy, bb.vx);
+                const bulletColor = bb.color || '#FF334F';
+                ctx.translate(bb.x, bb.y);
+                ctx.rotate(angle);
+                ctx.shadowBlur = reducedEffects ? 0 : 14;
+                ctx.shadowColor = bulletColor;
+                ctx.fillStyle = bulletColor;
+                ctx.beginPath();
+                ctx.roundRect(-11, -2.5, 22, 5, 2.5);
+                ctx.fill();
+                ctx.fillStyle = '#FFF1F4';
+                ctx.fillRect(-6, -1, 12, 2);
+            }
             ctx.restore();
         });
         bullets.forEach(b => { ctx.fillStyle = '#9B72CB'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill(); });
@@ -2713,49 +3805,125 @@
             announce('Please select MOUSE or KEYBOARD controls first.', '#FFEB3B');
             return;
         }
+        const startsFromMenu = devBossKind === null
+            && !document.getElementById('start-screen').classList.contains('hidden');
+        const launchShipIntro = startsFromMenu && showShipIntro;
+        localStorage.setItem('nebulaQuestHasPlayed', 'true');
+        queenFinale.phase = 'idle';
+        queenFinale.frame = 0;
+        document.getElementById('queen-finale').classList.add('hidden');
+        document.getElementById('queen-credits').classList.add('hidden');
+        gamePaused = false;
+        settingsOpen = false;
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.add('hidden');
+        document.getElementById('pause-button').innerText = 'PAUSE';
+        document.getElementById('pause-button').setAttribute('aria-pressed', 'false');
+        document.getElementById('pause-button').classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over').classList.add('hidden');
+        devBossTest = devBossKind !== null;
         score = 0; frame = 0; ammo = 10; isReloading = false; ultraEnergy = 100; bossActive = false; boss = null; bossUI.style.display = 'none';
+        forcedShipTimer = 0;
+        modeBeforeShipShowcase = null;
         unlockedShips = {
             FLASH: true,
-            PRO: devBossKind === 'broodmother' || devBossKind === 'queen',
+            PRO: devBossKind === 'spyda' || devBossKind === 'queen',
             ULTRA: devBossKind === 'queen'
         };
-        campaignStage = devBossKind === 'warden' ? 0 : devBossKind === 'broodmother' ? 1 : devBossKind === 'queen' ? 2 : 0;
-        score = devBossKind === 'warden' ? 2000 : devBossKind === 'broodmother' ? 5000 : devBossKind === 'queen' ? 8888 : 0;
+        campaignStage = devBossKind === 'warden' ? 0 : devBossKind === 'spyda' ? 1 : devBossKind === 'queen' ? 2 : 0;
+        score = devBossKind === 'warden' ? 2000 : devBossKind === 'spyda' ? 5000 : devBossKind === 'queen' ? 8888 : 0;
         frameAccumulator = 0; renderAccumulator = 0; previousFrameTime = null;
         enemies = []; enemyBullets = []; enemyPulses = []; obstacles = []; bullets = []; particles = []; collectibles = []; bossBullets = []; mines = []; lasers = [];
         obstacleTimer = 0; enemyTimer = 0; collectibleTimer = 0;
         player.x = canvas.width/2; player.y = canvas.height*0.8; player.targetX = player.x; player.targetY = player.y;
-        currentMode = MODES.FLASH; gameActive = true;
+        currentMode = MODES.FLASH;
+        finishShipIntro();
+        gameActive = true;
         if (devBossKind) {
             startBoss(devBossKind);
         }
         updateShipIndicator();
+        if (launchShipIntro) startShipIntro('FLASH');
+    }
+
+    function startShipIntro(shipId) {
+        const introTitles = {
+            FLASH: 'THE FLASH',
+            PRO: 'PURPLE SHIP // PRO',
+            ULTRA: 'RED SHIP // ULTRA'
+        };
+        const shipElement = document.getElementById(`ship-intro-${shipId.toLowerCase()}`);
+        const title = introTitles[shipId];
+        if (!shipElement || !title) throw new Error(`Unknown ship intro: ${shipId}`);
+        shipIntro.active = true;
+        shipIntro.frame = 0;
+        shipIntro.shipId = shipId;
+        document.getElementById('ship-intro').dataset.ship = shipId;
+        document.getElementById('ship-intro-title').innerText = title;
+        document.querySelectorAll('.ship-intro-ship').forEach(element => {
+            element.classList.toggle('hidden', element !== shipElement);
+        });
+        document.getElementById('ship-intro').classList.remove('hidden');
+        syncShipIntroPause();
+        document.getElementById('skip-ship-intro').focus();
+    }
+
+    function finishShipIntro() {
+        shipIntro.active = false;
+        shipIntro.frame = 0;
+        keys = {};
+        document.getElementById('ship-intro').classList.add('hidden');
+    }
+
+    function skipShipIntro() {
+        finishShipIntro();
     }
 
     function startBossTest(kind) {
-        if (!['warden', 'broodmother', 'queen'].includes(kind)) {
+        if (!['warden', 'spyda', 'queen'].includes(kind)) {
             throw new Error(`Unknown boss test encounter: ${kind}`);
         }
         startGame(kind);
     }
 
     function returnToMenu() {
+        if (forcedShipTimer > 0) finishShipShowcase();
+        finishShipIntro();
         gameActive = false;
+        queenFinale.phase = 'idle';
+        queenFinale.frame = 0;
+        gamePaused = false;
+        settingsOpen = false;
         bossActive = false;
         boss = null;
         bossUI.style.display = 'none';
         enemies = []; enemyBullets = []; enemyPulses = []; obstacles = []; bullets = [];
         particles = []; collectibles = []; bossBullets = []; mines = []; lasers = [];
         document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('queen-finale').classList.add('hidden');
+        document.getElementById('queen-credits').classList.add('hidden');
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.add('hidden');
+        document.getElementById('pause-button').innerText = 'PAUSE';
+        document.getElementById('pause-button').setAttribute('aria-pressed', 'false');
+        document.getElementById('pause-button').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         updateShipIndicator();
     }
 
     function endGame() {
         if (!gameActive) return;
+        if (devBossTest && devInvincible) return;
+        if (forcedShipTimer > 0) finishShipShowcase();
         gameActive = false;
+        gamePaused = false;
+        settingsOpen = false;
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.add('hidden');
+        document.getElementById('pause-button').innerText = 'PAUSE';
+        document.getElementById('pause-button').setAttribute('aria-pressed', 'false');
+        document.getElementById('pause-button').classList.add('hidden');
         document.getElementById('game-over').classList.remove('hidden');
         document.getElementById('end-title').innerText = "DEFEATED";
         document.getElementById('end-title').className = "text-2xl font-bold mb-2 text-red-500";
@@ -2766,20 +3934,62 @@
 
     function winGame() {
         if (!gameActive) return;
+        if (forcedShipTimer > 0) finishShipShowcase();
         gameActive = false;
+        queenFinale.phase = 'cinematic';
+        queenFinale.frame = 0;
+        gamePaused = false;
+        settingsOpen = false;
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('settings-screen').classList.add('hidden');
+        document.getElementById('pause-button').innerText = 'PAUSE';
+        document.getElementById('pause-button').setAttribute('aria-pressed', 'false');
+        document.getElementById('pause-button').classList.add('hidden');
         score += 880000;
-        document.getElementById('game-over').classList.remove('hidden');
-        document.getElementById('end-title').innerText = "QUEEN DEFEATED";
-        document.getElementById('end-title').className = "text-2xl font-bold mb-2 text-green-400";
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('queen-credits').classList.add('hidden');
+        document.getElementById('queen-finale').classList.remove('hidden');
+        document.getElementById('finale-caption').innerText = 'THE CROWN OF THE NEBULA BREAKS...';
+        document.getElementById('finale-caption').style.animation = '';
+        document.getElementById('queen-finale').classList.toggle('reduced-effects', reducedEffects);
+        bossActive = false;
+        boss = null;
+        bossUI.style.display = 'none';
+        enemies = [];
+        enemyBullets = [];
+        enemyPulses = [];
+        obstacles = [];
+        bullets = [];
+        particles = [];
+        collectibles = [];
+        bossBullets = [];
+        mines = [];
+        lasers = [];
         scoreEl.innerText = score;
         document.getElementById('final-score').innerText = score;
-        for(let i=0; i<6; i++) {
-            setTimeout(() => {
-                createExplosion(Math.random() * canvas.width, Math.random() * canvas.height, '#34A853', 25, 6);
-                shake = 5;
-            }, i * 300);
-        }
         soundSystem.winFanfare();
+    }
+
+    function startQueenCredits() {
+        queenFinale.phase = 'credits';
+        queenFinale.frame = 0;
+        document.getElementById('queen-finale').classList.add('hidden');
+        document.getElementById('queen-credits').classList.remove('hidden');
+    }
+
+    function skipQueenCinematic() {
+        if (queenFinale.phase === 'cinematic') startQueenCredits();
+    }
+
+    function finishQueenCredits() {
+        if (queenFinale.phase === 'complete' || queenFinale.phase === 'idle') return;
+        queenFinale.phase = 'complete';
+        queenFinale.frame = 0;
+        document.getElementById('queen-finale').classList.add('hidden');
+        document.getElementById('queen-credits').classList.add('hidden');
+        document.getElementById('end-title').innerText = 'QUEEN DEFEATED';
+        document.getElementById('end-title').className = 'text-2xl font-bold mb-2 text-green-400';
+        document.getElementById('game-over').classList.remove('hidden');
     }
 
     window.onload = () => {

@@ -2091,7 +2091,7 @@
             for (let i = boss.spydaPods.length - 1; i >= 0; i--) {
                 const pod = boss.spydaPods[i];
                 pod.pulse += 0.08;
-                pod.hatchTimer--;
+                pod.hatchTimer -= boss.phase === 2 ? 2 : 1;
                 if (pod.hatchTimer <= 0) {
                     const enemyTypes = ['orange', 'yellow', 'red', 'blue', 'green'];
                     const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];

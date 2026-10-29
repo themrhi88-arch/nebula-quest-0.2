@@ -88,6 +88,21 @@
             z-index: 100;
         }
 
+        #game-over {
+            width: min(520px, calc(100vw - 32px));
+            border-color: rgba(255, 91, 112, 0.55);
+            box-shadow: 0 24px 90px rgba(0, 0, 0, 0.75), 0 0 44px rgba(255, 45, 80, 0.12);
+        }
+
+        #game-over.defeat-reveal {
+            animation: defeatReveal 0.45s ease-out both;
+        }
+
+        @keyframes defeatReveal {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
         .control-mode-btn {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -697,11 +712,25 @@
         <button class="btn w-full" onclick="startGame()">ENGAGE</button>
     </div>
 
-    <div id="game-over" class="status-msg hidden">
-        <h2 id="end-title" class="text-2xl font-bold mb-2 text-red-500">DEFEATED</h2>
-        <p class="opacity-70 mb-6">Score: <span id="final-score">0</span></p>
+    <div id="game-over" class="status-msg hidden" role="dialog" aria-modal="true" aria-labelledby="end-title">
+        <p id="end-kicker" class="text-[10px] tracking-[0.4em] text-red-300 mb-2">FLIGHT RECORDER // FINAL TRANSMISSION</p>
+        <h2 id="end-title" class="text-3xl font-bold mb-5 text-red-400">MISSION FAILED</h2>
+        <div id="death-details" class="text-left rounded-lg border border-red-400/20 bg-red-950/20 p-4 mb-4">
+            <p class="text-[10px] uppercase tracking-[0.25em] text-red-200/70 mb-1">Final blow</p>
+            <p id="death-cause" class="font-bold text-white">Unknown threat</p>
+            <p id="death-tip" class="text-xs text-gray-300 mt-2"></p>
+        </div>
+        <div class="text-left rounded-lg border border-white/10 bg-white/5 p-4 mb-6">
+            <h3 class="text-[10px] uppercase tracking-[0.25em] text-blue-200/70 mb-3">Run recap</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <p class="text-gray-400">Score <span id="final-score" class="block text-xl font-bold text-white">0</span></p>
+                <p class="text-gray-400">Enemies defeated <span id="final-enemies" class="block text-xl font-bold text-white">0</span></p>
+                <p class="text-gray-400">Time survived <span id="final-time" class="block text-xl font-bold text-white">00:00</span></p>
+                <p class="text-gray-400">Closest escape <span id="final-escape" class="block text-sm font-bold text-white">No close calls</span></p>
+            </div>
+        </div>
         <div class="end-actions">
-            <button class="btn" type="button" onclick="startGame()">RETRY</button>
+            <button id="retry-button" class="btn" type="button" onclick="startGame()">RETRY</button>
             <button class="btn" type="button" onclick="returnToMenu()">BACK TO MENU</button>
         </div>
     </div>
@@ -839,12 +868,12 @@
             <div class="mt-16 space-y-3">
                 <h3 class="text-xs tracking-[0.4em] text-pink-200">A STARFALL ARCADE STORY</h3>
                 <p class="text-2xl font-semibold">Created by</p><p class="text-xl">The Nebula Quest Team</p>
-                <p class="mt-10 text-xs tracking-[0.35em] text-pink-200">GAME DESIGN</p><p class="text-xl">Mira Vale · Orion Quill</p>
-                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">COMBAT & ENCOUNTER DESIGN</p><p class="text-xl">Aster Wynn · The Deep-Space Systems Unit</p>
-                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">VISUALS & ANIMATION</p><p class="text-xl">Nova Reyes · Celeste Ardent</p>
+                <p class="mt-10 text-xs tracking-[0.35em] text-pink-200">GAME DESIGN</p><p class="text-xl">Derick Rosario · Orion Quill</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">COMBAT & ENCOUNTER DESIGN</p><p class="text-xl">Derick Rosario · The Deep-Space Systems Unit</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">VISUALS & ANIMATION</p><p class="text-xl">Derick Rosario · Celeste Ardent</p>
                 <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">SOUND DESIGN</p><p class="text-xl">Echo Meridian</p>
                 <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">QUALITY ASSURANCE</p><p class="text-xl">The Last-Star Test Pilots</p>
-                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">PLAY TESTER</p><p class="text-xl">Gerzon Bonilla</p>
+                <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">PLAY TESTER</p><p class="text-xl">Andrew H</p>
                 <p class="mt-8 text-xs tracking-[0.35em] text-pink-200">SPECIAL THANKS</p><p class="text-xl">Every pilot who kept going</p><p class="text-xl">and every star that showed the way.</p>
                 <p class="mt-16 text-3xl font-bold tracking-[0.35em]">THE END</p>
                 <p class="mt-6 pb-16 text-sm opacity-60">A fictional production · Made for the love of space games</p>
@@ -869,8 +898,12 @@
 
     let gameActive = false;
     const queenFinale = { phase: 'idle', frame: 0 };
+    const defeatCinematic = { active: false, framesRemaining: 0, cause: null, tip: '' };
     let score = 0;
     let frame = 0;
+    let enemiesDefeated = 0;
+    let closestEscape = null;
+    let closestEscapeGap = Infinity;
     let shake = 0;
     let ultraEnergy = 100;
     let screenFlash = 0;  // For hit feedback
@@ -929,6 +962,51 @@
 
     let currentMode = MODES.FLASH;
     let player = { x: 0, y: 0, targetX: 0, targetY: 0, trail: [] };
+
+    const ENEMY_NAMES = {
+        orange: 'Laser Hunter',
+        yellow: 'Mine Layer',
+        red: 'Rammer',
+        blue: 'Pulse Caster',
+        green: 'Gunner'
+    };
+
+    function recordNearMiss(distance, collisionDistance, threatName) {
+        const gap = distance - collisionDistance;
+        if (gap > 0 && gap <= 60 && gap < closestEscapeGap) {
+            closestEscapeGap = gap;
+            closestEscape = { gap, threatName };
+        }
+    }
+
+    function defeatTipFor(cause) {
+        if (cause.includes('Laser Hunter')) return 'Keep moving to break its lock before the beam fires.';
+        if (cause.includes('Mine Layer')) return 'Watch its path and leave space around the mines it drops.';
+        if (cause.includes('Rammer')) return 'Dodge sideways when it lines up a high-speed charge.';
+        if (cause.includes('Pulse Caster')) return 'Move outside the expanding pulse before it reaches you.';
+        if (cause.includes('Gunner')) return 'Keep changing direction to evade its aimed shots.';
+        if (cause.includes('Warden')) return 'Watch for the attack warning, then sidestep its aimed volleys.';
+        if (cause.includes('Spyda')) return "Escape marked spore zones and the laser's swept lane.";
+        if (cause.includes('Queen')) return 'Leave marked eruptions and stay ahead of the sweeping blade.';
+        if (cause.includes('asteroid')) return 'Leave a little room around falling asteroids.';
+        return 'Stay mobile and watch for danger cues before each attack.';
+    }
+
+    function showRunRecap(cause = null) {
+        document.getElementById('final-score').innerText = score.toLocaleString();
+        document.getElementById('final-enemies').innerText = enemiesDefeated.toLocaleString();
+        const totalSeconds = Math.floor(frame / 60);
+        document.getElementById('final-time').innerText =
+            `${String(Math.floor(totalSeconds / 60)).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`;
+        document.getElementById('final-escape').innerText = closestEscape
+            ? `${Math.round(closestEscape.gap)} px from ${closestEscape.threatName}`
+            : 'No close calls';
+        document.getElementById('death-details').classList.toggle('hidden', !cause);
+        if (cause) {
+            document.getElementById('death-cause').innerText = cause;
+            document.getElementById('death-tip').innerText = defeatTipFor(cause);
+        }
+    }
 
     function updateCampaignStatus() {
         if (bossActive && boss) {
@@ -1409,6 +1487,7 @@
 
     function finishMiniboss(kind) {
         if (kind !== 'warden' && kind !== 'spyda') soundSystem.bossDefeated();
+        enemiesDefeated++;
         bossActive = false;
         boss = null;
         enemies = [];
@@ -1498,7 +1577,7 @@
         }
     }
 
-    function hitByQueenHazard() {
+    function hitByQueenHazard(cause = 'Alien Queen attack') {
         if (!gameActive || boss.queenHazardCooldown > 0) return;
         boss.queenHazardCooldown = 36;
         if (currentMode.shield) {
@@ -1506,7 +1585,7 @@
             soundSystem.shieldHit();
             screenFlash = 0.2;
         } else {
-            endGame();
+            endGame(cause);
         }
     }
 
@@ -1517,7 +1596,7 @@
         ) ? 0.55 : 1;
     }
 
-    function hitBySpydaHazard() {
+    function hitBySpydaHazard(cause = 'Spyda spores') {
         if (!gameActive || boss.spydaHazardCooldown > 0) return;
         boss.spydaHazardCooldown = 36;
         if (currentMode.shield) {
@@ -1525,7 +1604,7 @@
             soundSystem.shieldHit();
             screenFlash = 0.2;
         } else {
-            endGame();
+            endGame(cause);
         }
     }
 
@@ -1569,6 +1648,7 @@
     function defeatSpydaMiniWarden() {
         const mini = boss.spydaMiniWarden;
         if (!mini) return;
+        enemiesDefeated++;
         boss.spydaMinisDefeated++;
         boss.spydaMiniWarden = null;
         boss.hp = Math.max(0, boss.spydaPhaseThreeHp * (1 - boss.spydaMinisDefeated * 0.5));
@@ -1585,6 +1665,20 @@
     }
 
     function update() {
+        if (defeatCinematic.active) {
+            defeatCinematic.framesRemaining--;
+            if (defeatCinematic.framesRemaining <= 0) {
+                defeatCinematic.active = false;
+                showRunRecap(defeatCinematic.cause);
+                const gameOver = document.getElementById('game-over');
+                gameOver.classList.remove('hidden');
+                gameOver.classList.remove('defeat-reveal');
+                void gameOver.offsetWidth;
+                if (!reducedEffects) gameOver.classList.add('defeat-reveal');
+                document.getElementById('retry-button').focus();
+            }
+            return;
+        }
         if (shipIntro.active) {
             if (!gamePaused && !settingsOpen) {
                 shipIntro.frame++;
@@ -1751,8 +1845,10 @@
             const closestX = l.x1 + projection * dx;
             const closestY = l.y1 + projection * dy;
             const dist = Math.hypot(player.x - closestX, player.y - closestY);
-            if (dist < currentMode.radius + 5) {
-                if (currentMode.shield) ultraEnergy -= 0.5; else endGame();
+            const laserCollisionDistance = currentMode.radius + 5;
+            recordNearMiss(dist, laserCollisionDistance, "Laser Hunter's beam");
+            if (dist < laserCollisionDistance) {
+                if (currentMode.shield) ultraEnergy -= 0.5; else endGame("Laser Hunter's beam");
             }
         }
 
@@ -1852,6 +1948,7 @@
                     let color = en.type === 'orange' ? '#FF8C00' : (en.type === 'yellow' ? '#FBBC05' : (en.type === 'blue' ? '#4285F4' : (en.type === 'green' ? '#34A853' : '#FF4444')));
                     createExplosion(en.x, en.y, color, 20);  // More particles
                     enemies.splice(j, 1);
+                    enemiesDefeated++;
                     soundSystem.enemyDestroyed(en.type);
                     soundSystem.impact();
                     hit = true; 
@@ -1930,7 +2027,7 @@
                 } else if (en.state === 'PULSING') {
                     en.x += Math.sin(frame * 0.02) * 1.5;
                     if (en.timer % 120 === 0) {
-                        enemyPulses.push({ x: en.x, y: en.y, radius: 10, maxRadius: 200, speed: 4, color: '#4285F4' });
+                        enemyPulses.push({ x: en.x, y: en.y, radius: 10, maxRadius: 200, speed: 4, color: '#4285F4', source: en.type });
                         soundSystem.enemyFire('pulse');
                     }
                 } else if (en.state === 'FLEE') {
@@ -1946,7 +2043,7 @@
                     en.lifetime--; en.x += Math.sin(frame * 0.03) * 2;
                     if (en.timer % 60 === 0) {
                         const angle = Math.atan2(player.y - en.y, player.x - en.x);
-                        enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6, radius: 4, color: '#FF334F' });
+                        enemyBullets.push({ x: en.x, y: en.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6, radius: 4, color: '#FF334F', source: en.type });
                         soundSystem.enemyFire('shot');
                     }
                     if (en.lifetime <= 0) sendEnemyOffscreen(en);
@@ -1963,11 +2060,14 @@
                 continue;
             }
 
-            if (Math.hypot(en.x - player.x, en.y - player.y) < currentMode.radius + 15) {
+            const enemyDistance = Math.hypot(en.x - player.x, en.y - player.y);
+            const enemyCollisionDistance = currentMode.radius + 15;
+            recordNearMiss(enemyDistance, enemyCollisionDistance, ENEMY_NAMES[en.type] || 'Enemy');
+            if (enemyDistance < enemyCollisionDistance) {
                 if (currentMode.shield) {
-                    enemies.splice(i, 1); createExplosion(en.x, en.y, '#FFF', 25);
+                    enemies.splice(i, 1); enemiesDefeated++; createExplosion(en.x, en.y, '#FFF', 25);
                     ultraEnergy -= 20; soundSystem.shieldHit(); soundSystem.enemyDestroyed(en.type); shake = 5; screenFlash = 0.3; score += 100;
-                } else endGame();
+                } else endGame(`${ENEMY_NAMES[en.type] || 'Enemy'} collision`);
             }
         }
 
@@ -1980,14 +2080,18 @@
                 enemyBullets.splice(i, 1);
                 continue;
             }
-            if (Math.hypot(eb.x - player.x, eb.y - player.y) < currentMode.radius + eb.radius) {
+            const bulletDistance = Math.hypot(eb.x - player.x, eb.y - player.y);
+            const bulletCollisionDistance = currentMode.radius + eb.radius;
+            const bulletSource = ENEMY_NAMES[eb.source] || 'Enemy';
+            recordNearMiss(bulletDistance, bulletCollisionDistance, `${bulletSource}'s shot`);
+            if (bulletDistance < bulletCollisionDistance) {
                 if (currentMode.shield) { 
                     createExplosion(eb.x, eb.y, '#FFF', 12);
                     enemyBullets.splice(i, 1); 
                     ultraEnergy -= 5; 
                     soundSystem.shieldHit(); 
                     screenFlash = 0.2;
-                } else endGame();
+                } else endGame(`${bulletSource}'s shot`);
             }
         }
 
@@ -1996,8 +2100,10 @@
             p.radius += p.speed;
             if (p.radius > p.maxRadius) { enemyPulses.splice(i, 1); continue; }
             const dist = Math.hypot(p.x - player.x, p.y - player.y);
-            if (Math.abs(dist - p.radius) < currentMode.radius + 4) {
-                if (currentMode.shield) { ultraEnergy -= 2; soundSystem.shieldHit(); screenFlash = 0.15; } else endGame();
+            const pulseCollisionDistance = currentMode.radius + 4;
+            recordNearMiss(Math.abs(dist - p.radius), pulseCollisionDistance, `${ENEMY_NAMES[p.source] || 'Enemy'} pulse`);
+            if (Math.abs(dist - p.radius) < pulseCollisionDistance) {
+                if (currentMode.shield) { ultraEnergy -= 2; soundSystem.shieldHit(); screenFlash = 0.15; } else endGame(`${ENEMY_NAMES[p.source] || 'Enemy'} pulse`);
             }
         }
 
@@ -2149,8 +2255,11 @@
                 if (mark.warning <= 0) {
                     boss.spydaWebs.push({ x: mark.x, y: mark.y, radius: 34, maxRadius: 84 + boss.phase * 10, timer: 900 });
                     createExplosion(mark.x, mark.y, '#C18CFF', 16, 3);
-                    if (Math.hypot(player.x - mark.x, player.y - mark.y) < 58 + currentMode.radius) {
-                        hitBySpydaHazard();
+                    const sporeDistance = Math.hypot(player.x - mark.x, player.y - mark.y);
+                    const sporeCollisionDistance = 58 + currentMode.radius;
+                    recordNearMiss(sporeDistance, sporeCollisionDistance, "Spyda spore eruption");
+                    if (sporeDistance < sporeCollisionDistance) {
+                        hitBySpydaHazard('Spyda spore eruption');
                     }
                     boss.spydaSporeMarks.splice(i, 1);
                 }
@@ -2218,12 +2327,14 @@
                     const segmentEnd = laser.direction === 1 ? frontX : canvas.width;
                     const nearestX = Math.max(segmentStart, Math.min(segmentEnd, player.x));
                     const laserDistance = Math.hypot(player.x - nearestX, player.y - laser.y);
-                    if (laserDistance < currentMode.radius + 12) {
+                    const laserCollisionDistance = currentMode.radius + 12;
+                    recordNearMiss(laserDistance, laserCollisionDistance, "Spyda's sweeping laser");
+                    if (laserDistance < laserCollisionDistance) {
                         if (currentMode.shield) {
                             ultraEnergy = Math.max(0, ultraEnergy - 0.12);
                             if (frame % 12 === 0) soundSystem.shieldHit();
                         } else {
-                            endGame();
+                            endGame("Spyda's sweeping laser");
                         }
                     }
                     if (laser.progress >= 1) {
@@ -2322,8 +2433,11 @@
                 boss.attackCount++;
                 createExplosion(mark.x, mark.y, '#FF315F', 18, 4);
                 boss.bloodMarks.splice(i, 1);
-                if (Math.hypot(player.x - mark.x, player.y - mark.y) < mark.radius + currentMode.radius) {
-                    hitByQueenHazard();
+                const markDistance = Math.hypot(player.x - mark.x, player.y - mark.y);
+                const markCollisionDistance = mark.radius + currentMode.radius;
+                recordNearMiss(markDistance, markCollisionDistance, "Queen's marked eruption");
+                if (markDistance < markCollisionDistance) {
+                    hitByQueenHazard("Alien Queen's marked eruption");
                 }
             }
             boss.queenBulletTimer--;
@@ -2389,8 +2503,11 @@
                     }
                     if (boss.queenComboState === 'sweep') {
                         boss.queenSweepY += (canvas.height + 64) / boss.queenSweepTimer;
-                        if (Math.abs(player.y - boss.queenSweepY) < currentMode.radius + 14) {
-                            hitByQueenHazard();
+                        const sweepDistance = Math.abs(player.y - boss.queenSweepY);
+                        const sweepCollisionDistance = currentMode.radius + 14;
+                        recordNearMiss(sweepDistance, sweepCollisionDistance, "Queen's sweeping blade");
+                        if (sweepDistance < sweepCollisionDistance) {
+                            hitByQueenHazard("Alien Queen's sweeping blade");
                         }
                     }
                 }
@@ -2443,10 +2560,15 @@
                     soundSystem.impact();
                     screenFlash = 0.2;
                     if (boss.hp <= 0) winGame();
-            } else if (!boss.isVulnerable && Math.hypot(player.x - boss.x, player.y - boss.y) < currentMode.radius + 90 * queenScale) {
-                if (currentMode.id === 'ULTRA') {
-                    ultraEnergy -= 0.65;
-                } else endGame();
+            } else if (!boss.isVulnerable) {
+                const queenDistance = Math.hypot(player.x - boss.x, player.y - boss.y);
+                const queenCollisionDistance = currentMode.radius + 90 * queenScale;
+                recordNearMiss(queenDistance, queenCollisionDistance, "Alien Queen's close-range attack");
+                if (queenDistance < queenCollisionDistance) {
+                    if (currentMode.id === 'ULTRA') {
+                        ultraEnergy -= 0.65;
+                    } else endGame("Alien Queen's close-range attack");
+                }
             }
             if (bossActive && boss) bossBar.style.width = (boss.hp / boss.maxHp * 100) + '%';
         }
@@ -2458,14 +2580,20 @@
                 bossBullets.splice(i, 1);
                 continue;
             }
-            if (Math.hypot(bb.x - player.x, bb.y - player.y) < currentMode.radius + bb.radius) {
+            const bossBulletDistance = Math.hypot(bb.x - player.x, bb.y - player.y);
+            const bossBulletCollisionDistance = currentMode.radius + bb.radius;
+            const attackerName = bb.miniWarden ? 'Mini Warden' : boss?.kind === 'warden'
+                ? 'Warden'
+                : boss?.kind === 'spyda' ? 'Spyda' : boss?.kind === 'queen' ? 'Alien Queen' : 'Boss';
+            recordNearMiss(bossBulletDistance, bossBulletCollisionDistance, `${attackerName}'s projectile`);
+            if (bossBulletDistance < bossBulletCollisionDistance) {
                 if (currentMode.shield) { 
                     createExplosion(bb.x, bb.y, '#FFF', 15);
                     bossBullets.splice(i, 1); 
                     ultraEnergy -= 5; 
                     soundSystem.shieldHit(); 
                     screenFlash = 0.25;
-                } else endGame();
+                } else endGame(`${attackerName}'s projectile`);
             }
         }
 
@@ -2474,7 +2602,10 @@
             o.x += o.vx;
             o.y += o.vy;
             o.rotation += o.spin;
-            if (Math.hypot(o.x - player.x, o.y - player.y) < currentMode.radius + o.size/2) {
+            const obstacleDistance = Math.hypot(o.x - player.x, o.y - player.y);
+            const obstacleCollisionDistance = currentMode.radius + o.size / 2;
+            recordNearMiss(obstacleDistance, obstacleCollisionDistance, 'Falling asteroid');
+            if (obstacleDistance < obstacleCollisionDistance) {
                 if (currentMode.shield) { 
                     createExplosion(o.x, o.y, '#F0F0F0', 20);
                     obstacles.splice(i, 1); 
@@ -2482,10 +2613,12 @@
                     soundSystem.shieldHit(); 
                     screenFlash = 0.3;
                     shake = 8;
-                } else endGame();
+                } else endGame('Falling asteroid');
             }
             if (o.y > canvas.height + 50) obstacles.splice(i, 1);
         }
+
+        if (!gameActive) return;
 
         for (let i = particles.length - 1; i >= 0; i--) {
             const p = particles[i];
@@ -3822,6 +3955,10 @@
             announce('Please select MOUSE or KEYBOARD controls first.', '#FFEB3B');
             return;
         }
+        defeatCinematic.active = false;
+        defeatCinematic.framesRemaining = 0;
+        defeatCinematic.cause = null;
+        document.getElementById('game-over').classList.remove('defeat-reveal');
         const startsFromMenu = devBossKind === null
             && !document.getElementById('start-screen').classList.contains('hidden');
         const launchShipIntro = startsFromMenu && showShipIntro;
@@ -3840,7 +3977,8 @@
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over').classList.add('hidden');
         devBossTest = devBossKind !== null;
-        score = 0; frame = 0; ammo = 10; isReloading = false; ultraEnergy = 100; bossActive = false; boss = null; bossUI.style.display = 'none';
+        score = 0; frame = 0; enemiesDefeated = 0; closestEscape = null; closestEscapeGap = Infinity;
+        ammo = 10; isReloading = false; ultraEnergy = 100; bossActive = false; boss = null; bossUI.style.display = 'none';
         forcedShipTimer = 0;
         modeBeforeShipShowcase = null;
         unlockedShips = {
@@ -3905,6 +4043,8 @@
     }
 
     function returnToMenu() {
+        defeatCinematic.active = false;
+        defeatCinematic.framesRemaining = 0;
         if (forcedShipTimer > 0) finishShipShowcase();
         finishShipIntro();
         gameActive = false;
@@ -3929,11 +4069,14 @@
         updateShipIndicator();
     }
 
-    function endGame() {
+    function endGame(cause = 'Unknown threat') {
         if (!gameActive) return;
         if (devBossTest && devInvincible) return;
         if (forcedShipTimer > 0) finishShipShowcase();
         gameActive = false;
+        defeatCinematic.active = true;
+        defeatCinematic.framesRemaining = 42;
+        defeatCinematic.cause = cause;
         gamePaused = false;
         settingsOpen = false;
         document.getElementById('pause-screen').classList.add('hidden');
@@ -3941,10 +4084,12 @@
         document.getElementById('pause-button').innerText = 'PAUSE';
         document.getElementById('pause-button').setAttribute('aria-pressed', 'false');
         document.getElementById('pause-button').classList.add('hidden');
-        document.getElementById('game-over').classList.remove('hidden');
-        document.getElementById('end-title').innerText = "DEFEATED";
-        document.getElementById('end-title').className = "text-2xl font-bold mb-2 text-red-500";
-        document.getElementById('final-score').innerText = score;
+        bossUI.style.display = 'none';
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('end-kicker').innerText = 'FLIGHT RECORDER // FINAL TRANSMISSION';
+        document.getElementById('end-title').innerText = 'MISSION FAILED';
+        document.getElementById('end-title').className = 'text-3xl font-bold mb-5 text-red-400';
+        showRunRecap(cause);
         createExplosion(player.x, player.y, '#F00', 30, 10); shake = 20;
         soundSystem.damage();
     }
@@ -3953,6 +4098,7 @@
         if (!gameActive) return;
         if (forcedShipTimer > 0) finishShipShowcase();
         gameActive = false;
+        enemiesDefeated++;
         queenFinale.phase = 'cinematic';
         queenFinale.frame = 0;
         gamePaused = false;
@@ -4004,8 +4150,10 @@
         queenFinale.frame = 0;
         document.getElementById('queen-finale').classList.add('hidden');
         document.getElementById('queen-credits').classList.add('hidden');
+        document.getElementById('end-kicker').innerText = 'MISSION COMPLETE // FLIGHT RECORDER';
         document.getElementById('end-title').innerText = 'QUEEN DEFEATED';
-        document.getElementById('end-title').className = 'text-2xl font-bold mb-2 text-green-400';
+        document.getElementById('end-title').className = 'text-3xl font-bold mb-5 text-green-400';
+        showRunRecap();
         document.getElementById('game-over').classList.remove('hidden');
     }
 

@@ -2254,7 +2254,7 @@
                     soundSystem.enemyDestroyed(en.type);
                     soundSystem.impact();
                     hit = true; 
-                    score += 100;
+                    if (!bossActive || boss.kind !== 'spyda') score += 100;
                     break;
                 }
             }
@@ -2368,7 +2368,8 @@
             if (enemyDistance < enemyCollisionDistance) {
                 if (currentMode.shield) {
                     enemies.splice(i, 1); enemiesDefeated++; createExplosion(en.x, en.y, '#FFF', 25);
-                    ultraEnergy -= 20; soundSystem.shieldHit(); soundSystem.enemyDestroyed(en.type); shake = 5; screenFlash = 0.3; score += 100;
+                    ultraEnergy -= 20; soundSystem.shieldHit(); soundSystem.enemyDestroyed(en.type); shake = 5; screenFlash = 0.3;
+                    if (!bossActive || boss.kind !== 'spyda') score += 100;
                 } else endGame(`${ENEMY_NAMES[en.type] || 'Enemy'} collision`);
             }
         }

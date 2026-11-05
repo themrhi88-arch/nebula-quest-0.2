@@ -657,6 +657,15 @@
         .menu-dev { margin-top: 18px; padding: 12px; border: 1px solid rgba(191, 131, 255, 0.28); border-radius: 8px; background: rgba(92, 43, 125, 0.13); }
         .menu-launch-button { min-height: 54px; border: 1px solid rgba(132, 224, 255, 0.6); background: linear-gradient(100deg, #176bd1, #2d98e8); box-shadow: 0 0 28px rgba(45, 152, 232, 0.25); letter-spacing: 0.16em; }
         .menu-launch-button:hover { filter: brightness(1.13); }
+        .boss-badge-row { display: flex; justify-content: flex-end; gap: 7px; margin-top: 10px; }
+        .boss-badge { display: block; width: 48px; height: 54px; flex: 0 0 48px; }
+        .boss-badge-ribbon { fill: #8D5A12; stroke: #E5B94F; stroke-width: 1.5; }
+        .boss-badge-plate { fill: #D7A53C; stroke: #FFE08A; stroke-width: 2; }
+        .boss-badge-ring { fill: none; stroke: #7A4B0B; stroke-width: 1.5; }
+        .boss-emblem { transition: filter 0.25s ease; }
+        .boss-badge:not(.defeated) .boss-emblem { filter: brightness(0); }
+        .boss-badge.defeated .boss-badge-plate { fill: #101725; }
+        .boss-badge.defeated .boss-badge-ring { stroke: #FFE08A; }
 
         @media (max-width: 720px) {
             #start-screen:not(.hidden) { grid-template-columns: 1fr; grid-template-areas: "hero" "console" "brief"; gap: 16px; width: calc(100vw - 24px); max-height: calc(100vh - 24px); padding: 18px; }
@@ -843,6 +852,49 @@
             </div>
 
             <button class="btn menu-launch-button w-full" type="button" onclick="startGame()">LAUNCH MISSION</button>
+            <div class="boss-badge-row" role="group" aria-label="Boss defeat badges, in campaign order">
+                <svg class="boss-badge" data-boss-badge="warden" viewBox="0 0 48 56" role="img" aria-label="Warden badge, locked" focusable="false">
+                    <path class="boss-badge-ribbon" d="M13 34 8 54 23 47 24 35M35 34 40 54 25 47 24 35"/>
+                    <circle class="boss-badge-plate" cx="24" cy="23" r="20"/>
+                    <circle class="boss-badge-ring" cx="24" cy="23" r="16.5"/>
+                    <g class="boss-emblem" transform="translate(24 23) scale(.12)">
+                        <path d="M-30-24-112-64-84-15-122 9-66 16-44 50 0 39 44 50 66 16 122 9 84-15 112-64 30-24 0-66Z" fill="#18243F"/>
+                        <ellipse cy="-2" rx="57" ry="48" fill="#315A8F"/>
+                        <ellipse cy="-18" rx="35" ry="22" fill="#102033"/>
+                        <ellipse cy="-17" rx="23" ry="5" fill="#8CEBFF"/>
+                        <path d="m-35-28-23-28m93 0L35-28" fill="none" stroke="#8AB5E8" stroke-width="4"/>
+                    </g>
+                </svg>
+                <svg class="boss-badge" data-boss-badge="spyda" viewBox="0 0 48 56" role="img" aria-label="Spyda badge, locked" focusable="false">
+                    <path class="boss-badge-ribbon" d="M13 34 8 54 23 47 24 35M35 34 40 54 25 47 24 35"/>
+                    <circle class="boss-badge-plate" cx="24" cy="23" r="20"/>
+                    <circle class="boss-badge-ring" cx="24" cy="23" r="16.5"/>
+                    <g class="boss-emblem" transform="translate(24 22) scale(.105)">
+                        <path d="m-27-12-115-60 31 64-44 31 74 5 42-15m66-25 115-60-31 64 44 31-74 5-42-15" fill="#39244C"/>
+                        <ellipse cy="-8" rx="53" ry="43" fill="#704B8F"/>
+                        <ellipse cy="30" rx="31" ry="46" fill="#39244C"/>
+                        <g fill="none" stroke="#B77BFF" stroke-width="4">
+                            <path d="m-34 3-35 18-7 15m7-20-15 13-7 15m7-28-23 8-7 15M34 3l35 18 7 15m-7-20 15 13 7 15m-7-28 23 8 7 15"/>
+                        </g>
+                        <ellipse cx="-17" cy="-15" rx="7" ry="12" fill="#E6C5FF"/>
+                        <ellipse cx="17" cy="-15" rx="7" ry="12" fill="#E6C5FF"/>
+                    </g>
+                </svg>
+                <svg class="boss-badge" data-boss-badge="queen" viewBox="0 0 48 56" role="img" aria-label="Alien Queen badge, locked" focusable="false">
+                    <path class="boss-badge-ribbon" d="M13 34 8 54 23 47 24 35M35 34 40 54 25 47 24 35"/>
+                    <circle class="boss-badge-plate" cx="24" cy="23" r="20"/>
+                    <circle class="boss-badge-ring" cx="24" cy="23" r="16.5"/>
+                    <g class="boss-emblem" transform="translate(24 23) scale(.15)">
+                        <path d="m-37-43-64-34 23 43-41 16 52 18-32 44 52-10 16 35L0 52l31 17 16-35 52 10-32-44 52-18-41-16 23-43-64 34Z" fill="#45182D"/>
+                        <path d="m-33-41-39-42 10 55 20 35m75-48 39-42-10 55-20 35" fill="#79243D"/>
+                        <path d="m-40-46 6-51 21 28L0-119l13 50 21-28 6 51Z" fill="#351225"/>
+                        <path d="M0-60c44 2 52 46 42 79L27 53 0 75-27 53-42 19c-10-33-2-77 42-79Z" fill="#B63852"/>
+                        <ellipse cy="-33" rx="25" ry="20" fill="#210E22"/>
+                        <path d="m-17-35 14 5-13 4m33-9-14 5 13 4" fill="#FF435B"/>
+                        <ellipse cy="12" rx="20" ry="27" fill="#F25B69"/>
+                    </g>
+                </svg>
+            </div>
             <p id="menu-attack-status" class="sr-only" aria-live="polite"></p>
         </section>
     </div>
@@ -1045,6 +1097,30 @@
         const value = localStorage.getItem(`nebulaQuest.${key}`);
         return value === null ? defaultValue : value === 'true';
     };
+    const bossKinds = ['warden', 'spyda', 'queen'];
+    const defeatedBosses = (() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem('nebulaQuest.defeatedBosses') || '[]');
+            return new Set(Array.isArray(saved) ? saved.filter(kind => bossKinds.includes(kind)) : []);
+        } catch {
+            return new Set();
+        }
+    })();
+    function updateBossBadges() {
+        document.querySelectorAll('[data-boss-badge]').forEach(badge => {
+            const defeated = defeatedBosses.has(badge.dataset.bossBadge);
+            badge.classList.toggle('defeated', defeated);
+            const bossName = badge.dataset.bossBadge === 'queen' ? 'Alien Queen' : badge.dataset.bossBadge[0].toUpperCase() + badge.dataset.bossBadge.slice(1);
+            badge.setAttribute('aria-label', `${bossName} badge, ${defeated ? 'unlocked' : 'locked'}`);
+        });
+    }
+    function markBossDefeated(kind) {
+        if (!bossKinds.includes(kind)) return;
+        defeatedBosses.add(kind);
+        localStorage.setItem('nebulaQuest.defeatedBosses', JSON.stringify([...defeatedBosses]));
+        updateBossBadges();
+    }
+    updateBossBadges();
     let isMuted = savedSetting('muted', false);
     let reducedEffects = savedSetting('reducedEffects', false);
     let hideTopLeftHud = savedSetting('hideTopLeftHud', false);
@@ -1391,7 +1467,7 @@
         "This isn't as easy as your mom",
         'Are you not brave?',
         "You're soft as baby shit",
-        'You remind me of the browns',
+        'Oscard is the worst player, be better',
         'Try Roblox',
         'Just like Oscard',
         'sweet as sugar',
@@ -1408,11 +1484,11 @@
         'Wimp',
         'No way your this ass',
         'Get out the trashcan',
-        'Try being like Chef Tuffy',
+        'Try being like Yash',
         'toughen up a little',
         "Kirby's Dream Land only costs $22.99!",
         'Dont disapoint me like Gerzon did',
-        'Would never survive a Parm class',
+        'Brain of an Oscard',
         'Ever beat Elden Ring?',
         'want me to add easy mode just for you?',
         'This game might not be for you',
@@ -1789,6 +1865,7 @@
 
     function finishMiniboss(kind) {
         if (kind !== 'warden' && kind !== 'spyda') soundSystem.bossDefeated();
+        markBossDefeated(kind);
         enemiesDefeated++;
         bossActive = false;
         boss = null;
@@ -4457,6 +4534,7 @@
         if (queenFinale.phase === 'complete' || queenFinale.phase === 'idle') return;
         queenFinale.phase = 'complete';
         queenFinale.frame = 0;
+        markBossDefeated('queen');
         document.getElementById('queen-finale').classList.add('hidden');
         document.getElementById('queen-credits').classList.add('hidden');
         document.getElementById('end-kicker').innerText = 'MISSION COMPLETE // FLIGHT RECORDER';
